@@ -4,18 +4,6 @@
 // HOLY HELPER BOT — Complete Rewrite
 // Modules: State, Localization, Formatting, Mentor Search, Chat, Streaks,
 //          Journal, Verse, Settings, Scheduler, Rating, Waiting List
-//
-// CHANGE LOG (this revision):
-//   - normalizeButtonText() + textMatches() now compare emoji-stripped text,
-//     so editing a keyboard label (e.g. removing emojis) can never cause a
-//     user's stale cached keyboard to misroute into the mentor/mentee
-//     chat-forwarding fallback.
-//   - ensureKeyboardFresh() silently re-sends the current persistent
-//     keyboard to any user whose stored keyboard_version is behind
-//     KEYBOARD_VERSION, on their very next message or button tap — so
-//     keyboard updates roll out to the whole user base without requiring
-//     everyone to manually run /start again. Bump KEYBOARD_VERSION whenever
-//     buildPersistentKeyboard()'s layout or labels change.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const TelegramBot = require('node-telegram-bot-api');
@@ -60,12 +48,6 @@ bot.setChatMenuButton({
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_MAX_MENTEES = parseInt(process.env.MAX_MENTEES_DEFAULT || '3');
 const PAGE_SIZE = 5;
-
-// Bump this any time buildPersistentKeyboard()'s layout or button labels
-// change (e.g. removing emojis, renaming a button, adding/removing rows).
-// ensureKeyboardFresh() uses this to silently push the updated keyboard to
-// every user on their next interaction, without requiring /start.
-const KEYBOARD_VERSION = 'v2';
 
 // ─── Localization ─────────────────────────────────────────────────────────────
 
@@ -121,21 +103,6 @@ function tSync(lang, key, replacements = {}) {
 function mdEscape(str) {
   if (!str) return '';
   return String(str).replace(/([*_`])/g, '\\$1');
-}
-
-// Strip emoji, variation selectors/ZWJ, and collapse whitespace so button
-// text can be compared across label edits. This means a user's stale
-// cached reply-keyboard (e.g. still showing an emoji we've since removed
-// from the label) still matches the correct handler instead of falling
-// through to the generic chat-forwarding fallback.
-function normalizeButtonText(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/\p{Extended_Pictographic}/gu, '')
-    .replace(/[\uFE0F\u200D]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
 }
 
 // ─── State Management ─────────────────────────────────────────────────────────
@@ -216,50 +183,6 @@ async function deleteMessage(chatId, messageId) {
 
 async function touchActivity(chatId) {
   await supabase.from('users').update({ last_active: new Date().toISOString() }).eq('telegram_id', chatId);
-}
-
-// ─── Auto Keyboard Refresh ─────────────────────────────────────────────────────
-// Telegram never pushes reply-keyboard updates to idle users — a user's
-// keyboard stays exactly as it was last sent until we send them a new
-// message carrying reply_markup. This runs on every incoming update
-// (message or callback) and, if the user's stored keyboard_version is
-// behind KEYBOARD_VERSION, silently sends a throwaway message to attach
-// the current keyboard, then deletes it. The keyboard itself remains set
-// on the chat after the message is gone, so nothing visible is left
-// behind — the user's very next tap already shows the current buttons.
-
-async function ensureKeyboardFresh(chatId) {
-  try {
-    const { data: s } = await supabase
-      .from('user_settings')
-      .select('keyboard_version')
-      .eq('telegram_id', chatId)
-      .single();
-
-    if (s?.keyboard_version === KEYBOARD_VERSION) return;
-
-    const [{ data: user }, lang] = await Promise.all([
-      supabase.from('users').select('role').eq('telegram_id', chatId).single(),
-      getUserLang(chatId)
-    ]);
-
-    // Only bother refreshing for users who have actually registered —
-    // unregistered chats don't have a persistent keyboard yet.
-    if (!user) return;
-
-    const sent = await bot.sendMessage(chatId, '🔄', {
-      reply_markup: buildPersistentKeyboard(user.role || 'user', lang)
-    }).catch(() => null);
-
-    if (sent) { try { await bot.deleteMessage(chatId, sent.message_id); } catch { } }
-
-    await supabase.from('user_settings').upsert(
-      { telegram_id: chatId, keyboard_version: KEYBOARD_VERSION },
-      { onConflict: 'telegram_id' }
-    );
-  } catch (e) {
-    console.warn('[KeyboardRefresh] failed for', chatId, e.message);
-  }
 }
 
 // ─── Main Menu ────────────────────────────────────────────────────────────────
@@ -1658,7 +1581,6 @@ bot.on('message', async (msg) => {
   const fileType = detectFileType(msg);
   if (fileType) {
     await touchActivity(chatId);
-    await ensureKeyboardFresh(chatId);
     await handleFileMessage(chatId, msg, fileType, state);
     return;
   }
@@ -1666,7 +1588,6 @@ bot.on('message', async (msg) => {
   if (!text) return;
 
   await touchActivity(chatId);
-  await ensureKeyboardFresh(chatId);
 
   if (text.startsWith('/')) {
     const command = text.split(' ')[0].toLowerCase();
@@ -1833,15 +1754,7 @@ bot.on('message', async (msg) => {
   }
 
   // ─── Persistent Menu Routing ────────────────────────────────────────────────
-  // Compares emoji-stripped, lowercased text so a user's stale cached
-  // keyboard (from before a label edit — e.g. removing emojis) still routes
-  // to the correct handler instead of falling through to chat forwarding.
-  const textMatches = (key) => {
-    const norm = normalizeButtonText(text);
-    return norm === normalizeButtonText(tSync(lang, key))
-      || norm === normalizeButtonText(tSync('en', key))
-      || norm === normalizeButtonText(tSync('am', key));
-  };
+  const textMatches = (key) => text === tSync(lang, key) || text === tSync('en', key) || text === tSync('am', key);
 
   if (textMatches('btn_find_mentor')) {
     const { data: ut } = await supabase.from('user_topics').select('topic_id, topics(name)').eq('telegram_id', chatId);
@@ -2166,7 +2079,6 @@ bot.on('callback_query', async (query) => {
   const lang = await getUserLang(chatId);
 
   await touchActivity(chatId);
-  await ensureKeyboardFresh(chatId);
 
   // Noop
   if (data === 'noop') { return bot.answerCallbackQuery(query.id); }

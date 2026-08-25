@@ -166,29 +166,8 @@ function renderStars(rating, count) {
 
 async function safeSend(chatId, text, extra = {}) {
   if (!chatId) return;
-  const { skipOpenAnchor, ...sendOptions } = extra;
-
-  let result;
-  try { result = await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...sendOptions }); }
-  catch (err) { console.error(`[Bot] Failed to send to ${chatId}:`, err.message); return; }
-
-  // Telegram only shows the "Open" quick-action pill in the chat list when
-  // the chat's most recent message has a single inline web_app/url button.
-  // Most of our messages use multi-button keyboards or the persistent reply
-  // keyboard, which don't qualify — so send a minimal trailing anchor
-  // message with just one button to keep the pill visible after every send.
-  const kb = sendOptions?.reply_markup?.inline_keyboard;
-  const alreadyQualifies = kb?.length === 1 && kb[0]?.length === 1 && (kb[0][0].web_app || kb[0][0].url);
-
-  if (!skipOpenAnchor && !alreadyQualifies) {
-    try {
-      await bot.sendMessage(chatId, '✝️ Holy', {
-        reply_markup: { inline_keyboard: [[{ text: 'Open', web_app: { url: APP_URL } }]] }
-      });
-    } catch (err) { console.warn(`[Bot] Failed to send Open anchor to ${chatId}:`, err.message); }
-  }
-
-  return result;
+  try { return await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...extra }); }
+  catch (err) { console.error(`[Bot] Failed to send to ${chatId}:`, err.message); }
 }
 
 async function safeSendLoading(chatId, text) {

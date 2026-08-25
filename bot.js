@@ -1192,6 +1192,11 @@ async function acceptMentorship(mentorId, userId, topicId) {
   await safeSend(userId, tSync(userLang, 'mentorship_accepted'));
   await safeSend(mentorId, tSync(mentorLang, 'mentorship_accepted_mentor'));
 
+  // The mentee may have requested several mentors at once — now that one has
+  // accepted, auto-reject their other still-pending requests so mentors
+  // don't sit on stale requests for someone who's already been matched.
+  await rejectOtherPendingRequestsForUser(userId, mentorId);
+
   // Notify mini app via socket so it refreshes without needing a manual reload
   try {
     const io = global._io;
@@ -1220,13 +1225,18 @@ async function rejectMentorship(mentorId, userId) {
 
 async function rejectOtherPendingRequestsForUser(userId, acceptedMentorId, exceptRequestId) {
   try {
-    const { data: requests, error: fetchErr } = await supabase
+    let query = supabase
       .from('mentorship_requests')
       .select('*, user:user_id(anonymous_id, user_settings(display_name))')
       .eq('user_id', userId)
       .eq('status', 'pending')
-      .neq('mentor_id', acceptedMentorId)
-      .neq('id', exceptRequestId);
+      .neq('mentor_id', acceptedMentorId);
+
+    // Only applied when explicitly provided — .neq('id', undefined) would
+    // otherwise produce an invalid filter and silently return zero rows.
+    if (exceptRequestId) query = query.neq('id', exceptRequestId);
+
+    const { data: requests, error: fetchErr } = await query;
 
     if (fetchErr) {
       console.error('[rejectOtherPendingRequests] Fetch error:', fetchErr.message);

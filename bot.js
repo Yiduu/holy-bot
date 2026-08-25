@@ -166,8 +166,29 @@ function renderStars(rating, count) {
 
 async function safeSend(chatId, text, extra = {}) {
   if (!chatId) return;
-  try { return await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...extra }); }
-  catch (err) { console.error(`[Bot] Failed to send to ${chatId}:`, err.message); }
+  const { skipOpenAnchor, ...sendOptions } = extra;
+
+  let result;
+  try { result = await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...sendOptions }); }
+  catch (err) { console.error(`[Bot] Failed to send to ${chatId}:`, err.message); return; }
+
+  // Telegram only shows the "Open" quick-action pill in the chat list when
+  // the chat's most recent message has a single inline web_app/url button.
+  // Most of our messages use multi-button keyboards or the persistent reply
+  // keyboard, which don't qualify — so send a minimal trailing anchor
+  // message with just one button to keep the pill visible after every send.
+  const kb = sendOptions?.reply_markup?.inline_keyboard;
+  const alreadyQualifies = kb?.length === 1 && kb[0]?.length === 1 && (kb[0][0].web_app || kb[0][0].url);
+
+  if (!skipOpenAnchor && !alreadyQualifies) {
+    try {
+      await bot.sendMessage(chatId, '✝️ Holy', {
+        reply_markup: { inline_keyboard: [[{ text: 'Open', web_app: { url: APP_URL } }]] }
+      });
+    } catch (err) { console.warn(`[Bot] Failed to send Open anchor to ${chatId}:`, err.message); }
+  }
+
+  return result;
 }
 
 async function safeSendLoading(chatId, text) {
@@ -554,8 +575,7 @@ async function listMentors(chatId, page = 0, topicId, sort = 'rating') {
     return safeSend(chatId, tSync(lang, 'all_mentors_full'), { reply_markup: kb });
   }
 
-  let text = `🔍 *${tSync(lang, 'mentor_list_title')}* (${tSync(lang, 'page_indicator', { cur: page + 1, total: totalPages })})\n\n`;
-  const buttons = [];
+  await safeSend(chatId, `🔍 *${tSync(lang, 'mentor_list_title')}* (${tSync(lang, 'page_indicator', { cur: page + 1, total: totalPages })})`, { skipOpenAnchor: true });
 
   for (const m of paginated) {
     const badge = onlineBadge(m.last_active);
@@ -565,29 +585,57 @@ async function listMentors(chatId, page = 0, topicId, sort = 'rating') {
     const status = isOnline(m.last_active) ? tSync(lang, 'status_online') : tSync(lang, 'status_away');
     const slots = (m.user_settings?.max_mentees || DEFAULT_MAX_MENTEES) - (menteeCount[m.telegram_id] || 0);
 
-    text += `${badge} *${displayName}*\n`;
+    let text = `${badge} *${displayName}*\n`;
     text += `${tSync(lang, 'label_status')}: ${status}\n`;
     text += `${tSync(lang, 'label_rating')}: ${stars}\n`;
     text += `${tSync(lang, 'label_slots')}: ${slots}\n`;
-    text += `${tSync(lang, 'label_bio')}: ${bio.substring(0, 80)}${bio.length > 80 ? '…' : ''}\n\n`;
+    text += `${tSync(lang, 'label_bio')}: ${bio.substring(0, 80)}${bio.length > 80 ? '…' : ''}`;
 
-    buttons.push([{ text: `${tSync(lang, 'btn_request')} ${displayName}`, callback_data: `mentor_req_${m.telegram_id}_${numericTopicId}` }]);
+    // Each mentor gets their own message with their Request button directly
+    // beneath them, instead of a shared button block after the whole list.
+    await safeSend(chatId, text, {
+      reply_markup: { inline_keyboard: [[{ text: `${tSync(lang, 'btn_request')} ${displayName}`, callback_data: `mentor_req_${m.telegram_id}_${numericTopicId}` }]] },
+      skipOpenAnchor: true
+    });
   }
 
-  // Sort buttons row
+  // Sort + pagination controls apply to the whole list, so they go in one
+  // trailing message rather than attached to any single mentor.
   const sortRow = SORT_OPTIONS.map(s => ({
     text: `${s === sort ? '✅ ' : ''}${tSync(lang, `sort_${s}`)}`,
     callback_data: `mentor_sort_${s}_${numericTopicId}_${page}`
   }));
-  buttons.push(sortRow);
+  const controlButtons = [sortRow];
 
-  // Pagination row
   const navRow = [];
   if (page > 0) navRow.push({ text: tSync(lang, 'btn_prev'), callback_data: `mentors_page_${page - 1}_${numericTopicId}_${sort}` });
   if (page < totalPages - 1) navRow.push({ text: tSync(lang, 'btn_next'), callback_data: `mentors_page_${page + 1}_${numericTopicId}_${sort}` });
-  if (navRow.length) buttons.push(navRow);
+  if (navRow.length) controlButtons.push(navRow);
 
-  await safeSend(chatId, text, { reply_markup: { inline_keyboard: buttons } });
+  const controlsLabel = lang === 'am' ? '⚙️ ደርድር/ገጽ' : '⚙️ Sort / page';
+  await safeSend(chatId, controlsLabel, { reply_markup: { inline_keyboard: controlButtons } });
+}
+
+// Sends each mentee as its own message with its Chat/End buttons directly
+// beneath it, instead of one big list followed by a detached button block.
+async function sendMenteeList(chatId, lang, mentees) {
+  await safeSend(chatId, `👥 *${tSync(lang, 'my_mentees_title')}*`, { skipOpenAnchor: true });
+
+  for (let i = 0; i < mentees.length; i++) {
+    const m = mentees[i];
+    const { data: u } = await supabase.from('users').select('anonymous_id').eq('telegram_id', m.user_id).single();
+    const menteeText = `👤 @${mdEscape(u?.anonymous_id || String(m.user_id))} (${mdEscape(m.topics?.name || '?')})`;
+    const isLast = i === mentees.length - 1;
+    await safeSend(chatId, menteeText, {
+      reply_markup: {
+        inline_keyboard: [[
+          { text: lang === 'am' ? '💬 አውራ' : '💬 Chat', callback_data: `focus_chat_${m.user_id}` },
+          { text: `❌ ${tSync(lang, 'btn_end')} @${u?.anonymous_id || m.user_id}`, callback_data: `end_mentorship_${m.user_id}` }
+        ]]
+      },
+      skipOpenAnchor: !isLast
+    });
+  }
 }
 
 // ─── Waiting List ─────────────────────────────────────────────────────────────
@@ -1773,17 +1821,7 @@ bot.on('message', async (msg) => {
       return safeSend(chatId, tSync(lang, 'no_mentees'));
     }
 
-    let textStr = `👥 *${tSync(lang, 'my_mentees_title')}*\n\n`;
-    const buttons = [];
-    for (const m of mentees) {
-      const { data: u } = await supabase.from('users').select('anonymous_id').eq('telegram_id', m.user_id).single();
-      textStr += `👤 @${mdEscape(u?.anonymous_id || String(m.user_id))} (${mdEscape(m.topics?.name || '?')})\n`;
-      buttons.push([
-        { text: lang === 'am' ? '💬 አውራ' : '💬 Chat', callback_data: `focus_chat_${m.user_id}` },
-        { text: `❌ ${tSync(lang, 'btn_end')} @${u?.anonymous_id || m.user_id}`, callback_data: `end_mentorship_${m.user_id}` }
-      ]);
-    }
-    return safeSend(chatId, textStr, { reply_markup: { inline_keyboard: buttons } });
+    return sendMenteeList(chatId, lang, mentees);
   }
   if (textMatches('btn_schedule')) {
     setState(chatId, 'sched_type', null, { type: 'group' });
@@ -2544,17 +2582,7 @@ bot.on('callback_query', async (query) => {
       return bot.answerCallbackQuery(query.id, { text: tSync(lang, 'no_mentees'), show_alert: true });
     }
 
-    let textStr = `👥 *${tSync(lang, 'my_mentees_title')}*\n\n`;
-    const buttons = [];
-    for (const m of mentees) {
-      const { data: u } = await supabase.from('users').select('anonymous_id').eq('telegram_id', m.user_id).single();
-      textStr += `👤 @${mdEscape(u?.anonymous_id || String(m.user_id))} (${mdEscape(m.topics?.name || '?')})\n`;
-      buttons.push([
-        { text: lang === 'am' ? '💬 አውራ' : '💬 Chat', callback_data: `focus_chat_${m.user_id}` },
-        { text: `❌ ${tSync(lang, 'btn_end')} @${u?.anonymous_id || m.user_id}`, callback_data: `end_mentorship_${m.user_id}` }
-      ]);
-    }
-    await safeSend(chatId, textStr, { reply_markup: { inline_keyboard: buttons } });
+    await sendMenteeList(chatId, lang, mentees);
     return bot.answerCallbackQuery(query.id);
   }
   else if (data.startsWith('end_mentorship_')) {

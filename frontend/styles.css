@@ -78,16 +78,28 @@
   --theme-transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-body, .app-header, .bottom-nav, .chat-input-row, .card, .mentor-card, .session-item {
+body,
+.app-header,
+.bottom-nav,
+.chat-input-row,
+.card,
+.mentor-card,
+.session-item {
   transition: var(--theme-transition);
 }
 
-.btn, .toggle, .nav-item, .stat-card, .journal-item {
+.btn,
+.toggle,
+.nav-item,
+.stat-card,
+.journal-item {
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 @media (max-width: 480px) {
-  .app-header, .bottom-nav {
+
+  .app-header,
+  .bottom-nav {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     background: var(--bg2);
@@ -316,7 +328,7 @@ h3 {
    markup, so toggles and buttons visibly landed in different spots
    from page to page. Pinning every non-heading child to a fixed size
    keeps their position identical everywhere. */
-.app-header > *:not(h2) {
+.app-header>*:not(h2) {
   flex-shrink: 0;
 }
 
@@ -1109,12 +1121,10 @@ textarea.form-control {
   position: absolute;
   inset: 0;
   background: var(--toggle-bg);
-  background-image: linear-gradient(
-    -45deg,
-    rgba(20, 20, 20, 0.8) 0%,
-    rgba(30, 30, 30, 0.3) 50%,
-    rgba(20, 20, 20, 0.8) 100%
-  );
+  background-image: linear-gradient(-45deg,
+      rgba(20, 20, 20, 0.8) 0%,
+      rgba(30, 30, 30, 0.3) 50%,
+      rgba(20, 20, 20, 0.8) 100%);
   opacity: 1;
   transition: all var(--toggle-transition);
 }
@@ -1122,11 +1132,9 @@ textarea.form-control {
 .neo-grid-layer {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(
-      to right,
+  background-image: linear-gradient(to right,
       rgba(201, 168, 76, 0.08) 1px,
-      transparent 1px
-    ),
+      transparent 1px),
     linear-gradient(to bottom, rgba(201, 168, 76, 0.08) 1px, transparent 1px);
   background-size: 5px 5px;
   opacity: 0;
@@ -1243,11 +1251,9 @@ textarea.form-control {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--toggle-on-color) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      var(--toggle-on-color) 0%,
+      transparent 70%);
   transform: translate(-50%, -50%);
   opacity: 0;
   transition: all 0.4s ease-out;
@@ -1317,17 +1323,17 @@ textarea.form-control {
 }
 
 /* ON state */
-.neo-toggle-input:checked + .neo-toggle .neo-thumb {
+.neo-toggle-input:checked+.neo-toggle .neo-thumb {
   transform: translateX(calc(var(--toggle-width) - 30px));
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-thumb-ring {
+.neo-toggle-input:checked+.neo-toggle .neo-thumb-ring {
   background-color: var(--toggle-on-color);
   border-color: rgba(201, 168, 76, 0.3);
   box-shadow: 0 0 15px rgba(201, 168, 76, 0.5);
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-thumb-wave {
+.neo-toggle-input:checked+.neo-toggle .neo-thumb-wave {
   height: 7px;
   width: 7px;
   border-radius: 50%;
@@ -1335,60 +1341,60 @@ textarea.form-control {
   border: 1px solid #1a1200;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-thumb-pulse {
+.neo-toggle-input:checked+.neo-toggle .neo-thumb-pulse {
   transform: scale(1.2);
   opacity: 0.3;
   animation: neo-pulse 1.5s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-track-highlight {
+.neo-toggle-input:checked+.neo-toggle .neo-track-highlight {
   background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.2));
   opacity: 1;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-grid-layer {
+.neo-toggle-input:checked+.neo-toggle .neo-grid-layer {
   opacity: 1;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-analyzer {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-analyzer {
   opacity: 1;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-bar:nth-child(1) {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-bar:nth-child(1) {
   animation: neo-spectrum 0.9s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-bar:nth-child(2) {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-bar:nth-child(2) {
   animation: neo-spectrum 0.8s 0.1s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-bar:nth-child(3) {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-bar:nth-child(3) {
   animation: neo-spectrum 1.1s 0.2s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-bar:nth-child(4) {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-bar:nth-child(4) {
   animation: neo-spectrum 0.7s 0.1s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-spectrum-bar:nth-child(5) {
+.neo-toggle-input:checked+.neo-toggle .neo-spectrum-bar:nth-child(5) {
   animation: neo-spectrum 0.9s 0.15s infinite;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-status-dot {
+.neo-toggle-input:checked+.neo-toggle .neo-status-dot {
   background-color: var(--toggle-on-color);
   box-shadow: 0 0 8px var(--toggle-on-color);
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-status-text {
+.neo-toggle-input:checked+.neo-toggle .neo-status-text {
   color: var(--toggle-on-color);
 }
 
-.neo-toggle-input:checked + .neo-toggle + .neo-value-display {
+.neo-toggle-input:checked+.neo-toggle+.neo-value-display {
   opacity: 1;
   transform: translateY(0);
 }
 
-.neo-toggle-input:checked + .neo-toggle + .neo-value-display .neo-value-text {
+.neo-toggle-input:checked+.neo-toggle+.neo-value-display .neo-value-text {
   color: var(--toggle-on-color);
 }
 
@@ -1409,10 +1415,12 @@ textarea.form-control {
     transform: scale(1);
     opacity: 0.5;
   }
+
   50% {
     transform: scale(1.5);
     opacity: 0.2;
   }
+
   100% {
     transform: scale(1);
     opacity: 0.5;
@@ -1423,9 +1431,11 @@ textarea.form-control {
   0% {
     height: 3px;
   }
+
   50% {
     height: 8px;
   }
+
   100% {
     height: 3px;
   }
@@ -1446,11 +1456,11 @@ textarea.form-control {
     transform 1s ease;
 }
 
-.neo-toggle-input:checked + .neo-toggle .neo-status-text::before {
+.neo-toggle-input:checked+.neo-toggle .neo-status-text::before {
   content: "ACTIVE";
 }
 
-.neo-toggle-input:not(:checked) + .neo-toggle .neo-status-text::before {
+.neo-toggle-input:not(:checked)+.neo-toggle .neo-status-text::before {
   content: "STANDBY";
 }
 
@@ -3415,8 +3425,10 @@ textarea.form-control {
   max-height: 132px;
   min-height: 38px;
   box-sizing: border-box;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
@@ -4004,8 +4016,8 @@ textarea.form-control {
   opacity: 0.8;
 }
 
-.goal-add-date.has-value ~ .goal-date-placeholder,
-.goal-add-date:focus ~ .goal-date-placeholder {
+.goal-add-date.has-value~.goal-date-placeholder,
+.goal-add-date:focus~.goal-date-placeholder {
   display: none;
 }
 
@@ -4111,13 +4123,16 @@ textarea.form-control {
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-behavior: auto;
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* old Edge/IE */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* old Edge/IE */
 }
 
 .my-goals-viewport::-webkit-scrollbar,
 .goal-panel-viewport::-webkit-scrollbar {
-  display: none;              /* Chrome/Safari/WebView */
+  display: none;
+  /* Chrome/Safari/WebView */
 }
 
 .my-goals-viewport {
@@ -8037,10 +8052,12 @@ textarea.form-control {
   position: relative;
   display: inline-block;
 }
+
 .premium-dropdown.form-dropdown {
   display: block;
   width: 100%;
 }
+
 .premium-dropdown-btn {
   display: flex;
   align-items: center;
@@ -8057,6 +8074,7 @@ textarea.form-control {
   user-select: none;
   -webkit-user-select: none;
 }
+
 .premium-dropdown.form-dropdown .premium-dropdown-btn {
   width: 100%;
   justify-content: space-between;
@@ -8069,28 +8087,34 @@ textarea.form-control {
   font-weight: 500;
   text-align: left;
 }
+
 .premium-dropdown-btn:hover {
   border-color: var(--gold);
   background: var(--gold-dim);
 }
+
 .premium-dropdown.form-dropdown .premium-dropdown-btn:hover {
   border-color: var(--border);
   background: var(--bg3);
 }
+
 .premium-dropdown-btn:focus,
 .premium-dropdown[data-open] .premium-dropdown-btn {
   border-color: var(--gold);
   outline: none;
 }
+
 .premium-dropdown-btn .dropdown-arrow {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
   transition: transform 0.25s var(--ease-premium);
 }
+
 .premium-dropdown[data-open] .dropdown-arrow {
   transform: rotate(180deg);
 }
+
 .premium-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -8112,16 +8136,19 @@ textarea.form-control {
   max-height: 260px;
   overflow-y: auto;
 }
+
 .premium-dropdown.form-dropdown .premium-dropdown-menu {
   width: 100%;
   min-width: 100%;
   box-sizing: border-box;
 }
+
 .premium-dropdown[data-open] .premium-dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
 }
+
 .dropdown-item {
   display: flex;
   align-items: center;
@@ -8141,15 +8168,34 @@ textarea.form-control {
   transition: all 0.15s ease;
   text-align: left;
 }
+
 .dropdown-item:hover {
   background: var(--gold-dim);
   color: var(--gold-light);
 }
+
 .dropdown-item.selected {
   background: var(--gold-dim);
   color: var(--gold-light);
   font-weight: 700;
 }
+
 .dropdown-item:active {
   transform: scale(0.98);
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.chat-send-btn {
+  animation: float 2s ease-in-out infinite;
 }

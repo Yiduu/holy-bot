@@ -1614,11 +1614,11 @@
   <div id="menteeSelectModal" class="modal-overlay" onclick="if(event.target===this)closeMenteeSelectModal()">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">Select Mentee</div>
-      <p class="text-sm text-dim mb-16">Choose which mentee to invite to this private session.</p>
+      <div class="modal-title" data-i18n="select_mentee_modal_title">Select Mentee</div>
+      <p class="text-sm text-dim mb-16" data-i18n="select_mentee_modal_desc">Choose which mentee to invite to this private session.</p>
       <div id="menteeSelectList" style="display:flex;flex-direction:column;gap:10px;max-height:50vh;overflow-y:auto">
       </div>
-      <button class="btn btn-ghost btn-full mt-16" onclick="closeMenteeSelectModal()">Cancel</button>
+      <button class="btn btn-ghost btn-full mt-16" onclick="closeMenteeSelectModal()" data-i18n="btn_cancel">Cancel</button>
     </div>
   </div>
 
@@ -1815,17 +1815,17 @@
   <!-- ── Modal: Schedule Session ───────────────────────────── -->
   <div id="scheduleModal" class="modal-overlay">
     <div class="modal">
-      <h3 id="scheduleModalTitle">Schedule Session</h3>
+      <h3 id="scheduleModalTitle" data-i18n="Schedule Session">Schedule Session</h3>
       <div id="groupTitleField" class="form-group hidden">
         <label class="form-label" data-i18n="session_title_label">Session Title</label>
         <input id="scheduleTitle" class="form-control" placeholder="e.g. Weekly Group Study" />
       </div>
       <div class="form-group">
-        <label class="form-label">Date</label>
+        <label class="form-label" data-i18n="Date">Date</label>
         <input id="scheduleDate" type="date" class="form-control" />
       </div>
       <div class="form-group">
-        <label class="form-label">Time</label>
+        <label class="form-label" data-i18n="Time">Time</label>
         <input id="scheduleTime" type="time" class="form-control" />
       </div>
       <div id="groupParticipantsField" class="form-group hidden">
@@ -1835,8 +1835,8 @@
         </div>
       </div>
       <div class="flex gap-8 mt-16">
-        <button class="btn btn-outline flex-1" onclick="closeScheduleModal()">Cancel</button>
-        <button id="scheduleBtn" class="btn btn-primary flex-1">Schedule</button>
+        <button class="btn btn-outline flex-1" onclick="closeScheduleModal()" data-i18n="btn_cancel">Cancel</button>
+        <button id="scheduleBtn" class="btn btn-primary flex-1" data-i18n="btn_schedule_action">Schedule</button>
       </div>
     </div>
   </div>

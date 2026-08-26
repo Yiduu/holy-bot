@@ -3510,19 +3510,20 @@ function showScheduleModal(is_group, mentee_id = null) {
 
   if (!modal) return;
 
-  modalTitle.textContent = is_group ? 'Schedule Group Session' : 'Schedule 1-on-1 Session';
+  modalTitle.textContent = is_group ? t('Schedule Group Session') : t('Schedule 1-on-1 Session');
+  if (btn) btn.textContent = t('btn_schedule_action');
   // The title field now applies to both session types — the host can name
   // a 1-on-1 session too (e.g. "Career Check-in"), not just group sessions.
   titleField.classList.remove('hidden');
   const titleInput = document.getElementById('scheduleTitle');
   if (titleInput) {
-    titleInput.placeholder = is_group ? 'e.g. Weekly Group Study' : 'e.g. Bible Study (optional)';
+    titleInput.placeholder = is_group ? t('session_group_placeholder') : t('session_1on1_placeholder');
     titleInput.value = '';
   }
   participantField.classList.toggle('hidden', !is_group);
 
   if (is_group && menteeList) {
-    menteeList.innerHTML = '<div class="text-xs text-dim">Loading mentees...</div>';
+    menteeList.innerHTML = `<div class="text-xs text-dim">${escapeHtml(t('loading_mentees'))}</div>`;
     apiFetch('/api/mentors/my-mentees').then(mentees => {
       if (!mentees.length) {
         menteeList.innerHTML = `<div class="text-xs text-dim">${t('no_mentees_to_invite')}</div>`;
@@ -3531,11 +3532,11 @@ function showScheduleModal(is_group, mentee_id = null) {
       menteeList.innerHTML = mentees.map(m => `
         <label class="flex items-center gap-8 mb-4" style="cursor:pointer">
           <input type="checkbox" name="invite_mentee" value="${m.user.telegram_id}" />
-          <span class="text-sm">${escapeHtml(m.user.anonymous_id)}</span>
+          <span class="text-sm">${escapeHtml(m.user?.user_settings?.display_name || m.user.anonymous_id)}</span>
         </label>
       `).join('');
     }).catch(e => {
-      menteeList.innerHTML = `<div class="text-danger text-xs">${e.message}</div>`;
+      menteeList.innerHTML = `<div class="text-danger text-xs">${escapeHtml(e.message)}</div>`;
     });
   }
 
@@ -3550,11 +3551,11 @@ function showScheduleModal(is_group, mentee_id = null) {
     haptic('medium');
     const date = document.getElementById('scheduleDate').value;
     const time = document.getElementById('scheduleTime').value;
-    const title = document.getElementById('scheduleTitle').value || (is_group ? 'Group Session' : '1-on-1 Session');
+    const title = document.getElementById('scheduleTitle').value || (is_group ? t('Group Session') : t('1-on-1 Session'));
 
     if (!date || !time) {
       haptic('error');
-      showToast('Please pick date and time', 'error');
+      showToast(t('please_pick_datetime'), 'error');
       return;
     }
 
@@ -3571,7 +3572,7 @@ function showScheduleModal(is_group, mentee_id = null) {
     const scheduledAtObj = new Date(year, month - 1, day, hour, minute);
     if (isNaN(scheduledAtObj.getTime())) {
       haptic('error');
-      showToast('Invalid date or time selected', 'error');
+      showToast(t('invalid_datetime_selected'), 'error');
       return;
     }
 
@@ -3596,17 +3597,23 @@ function openMenteeSelectModal() {
 
   apiFetch('/api/mentors/my-mentees').then(mentees => {
     if (!mentees.length) {
-      list.innerHTML = '<p class="text-center py-20">No active mentees.</p>';
+      list.innerHTML = `<p class="text-center py-20 text-dim">${escapeHtml(t('no_active_mentees'))}</p>`;
       return;
     }
-    list.innerHTML = mentees.map(m => `
+    const joinedLabel = t('Joined');
+    const dateLocale = currentLanguage === 'am' ? 'am-ET' : undefined;
+    list.innerHTML = mentees.map(m => {
+      const displayName = m.user?.user_settings?.display_name || m.user?.anonymous_id || '–';
+      const dateStr = m.assigned_at ? new Date(m.assigned_at).toLocaleDateString(dateLocale) : '';
+      return `
       <button class="btn btn-outline btn-full" style="text-align:left;justify-content:flex-start;display:block;height:auto;padding:12px" onclick="startPrivateSession('${m.user.telegram_id}')">
-        <div class="font-bold">${escapeHtml(m.user.anonymous_id)}</div>
-        <div class="text-xs text-dim">Joined ${new Date(m.assigned_at).toLocaleDateString()}</div>
+        <div class="font-bold">${escapeHtml(displayName)}</div>
+        <div class="text-xs text-dim">${escapeHtml(joinedLabel)} ${escapeHtml(dateStr)}</div>
       </button>
-    `).join('');
+    `;
+    }).join('');
   }).catch(e => {
-    list.innerHTML = `<p class="text-danger">${e.message}</p>`;
+    list.innerHTML = `<p class="text-danger">${escapeHtml(e.message)}</p>`;
   });
 }
 
@@ -3631,7 +3638,7 @@ async function openPrivateSessionFlow() {
     const res = await apiFetch('/api/users/chat-partner');
     if (res.type === 'none') {
       haptic('error');
-      showToast('No active mentees to start a session with.', 'error');
+      showToast(t('no_active_mentees_session'), 'error');
     } else if (res.type === 'single') {
       // Only one mentee — go straight to the schedule picker with them pre-selected
       showScheduleModal(false, res.partner.telegram_id);
@@ -5512,7 +5519,7 @@ function renderMenteesList() {
             ${renderAvatar(user, letter)}
             <div>
               <div class="font-bold" style="color:var(--gold)">${escapeHtml(displayName)}</div>
-              <div class="text-xs text-dim">${t('Joined')} ${new Date(assigned_at).toLocaleDateString()}</div>
+              <div class="text-xs text-dim">${t('Joined')} ${new Date(assigned_at).toLocaleDateString(currentLanguage === 'am' ? 'am-ET' : undefined)}</div>
               ${renderMenteeStatusLine(user)}
               ${renderMenteeStreakBadge(user.telegram_id)}
             </div>

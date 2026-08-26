@@ -143,6 +143,7 @@ body,
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -165,6 +166,7 @@ body {
   font-weight: 400;
   line-height: 1.45;
   text-shadow: 0 0 0.4px currentColor, 0 0 0.4px currentColor;
+  -webkit-touch-callout: none;
 }
 
 button {
@@ -266,7 +268,9 @@ h3 {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.18s cubic-bezier(0.2, 0, 0, 1);
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .page.active {
@@ -283,12 +287,10 @@ h3 {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
@@ -801,14 +803,18 @@ h3 {
   font-size: 0.83rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  transition: transform 0.15s var(--ease-spring), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .btn:active {
-  transform: scale(0.94);
+  transform: scale(0.98);
+  opacity: 0.94;
 }
 
 .btn-primary {
@@ -824,7 +830,8 @@ h3 {
 }
 
 .btn-primary:active {
-  transform: scale(0.94);
+  transform: scale(0.98);
+  opacity: 0.94;
 }
 
 .btn-outline {

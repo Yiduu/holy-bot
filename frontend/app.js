@@ -979,20 +979,16 @@ function setTheme(theme) {
   const root = document.documentElement;
   root.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
-  requestAnimationFrame(() => {
-    const icon = theme === 'light' ? THEME_ICON_MOON : THEME_ICON_SUN;
-    // Scoped to .theme-icon-svg (not every span) so the label span in the
-    // Settings theme pill isn't overwritten along with the icon.
-    document.querySelectorAll('.theme-btn .theme-icon-svg').forEach(el => el.innerHTML = icon);
-  });
+  const icon = theme === 'light' ? THEME_ICON_MOON : THEME_ICON_SUN;
+  document.querySelectorAll('.theme-btn .theme-icon-svg').forEach(el => el.innerHTML = icon);
   if (typeof rebuildChart === 'function') {
     requestAnimationFrame(rebuildChart);
   }
 }
 function toggleTheme() {
-  haptic('light');
+  haptic('selection');
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-  setTimeout(() => setTheme(cur === 'dark' ? 'light' : 'dark'), 10);
+  setTheme(cur === 'dark' ? 'light' : 'dark');
 }
 setTheme(localStorage.getItem('theme') || 'dark');
 

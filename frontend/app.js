@@ -3692,14 +3692,19 @@ function openMenteeSelectModal() {
     const dateLocale = currentLanguage === 'am' ? 'am-ET' : undefined;
     list.innerHTML = mentees.map(m => {
       const displayName = m.user?.user_settings?.display_name || m.user?.anonymous_id || '–';
+      const letter = (displayName || '?').charAt(0).toUpperCase();
       const dateStr = m.assigned_at ? new Date(m.assigned_at).toLocaleDateString(dateLocale) : '';
       return `
-      <button class="btn btn-outline btn-full" style="text-align:left;justify-content:flex-start;display:block;height:auto;padding:12px" onclick="startPrivateSession('${m.user.telegram_id}')">
-        <div class="font-bold">${escapeHtml(displayName)}</div>
-        <div class="text-xs text-dim">${escapeHtml(joinedLabel)} ${escapeHtml(dateStr)}</div>
+      <button class="btn btn-outline btn-full" style="text-align:left;justify-content:flex-start;display:flex;align-items:center;gap:12px;height:auto;padding:12px" onclick="startPrivateSession('${m.user.telegram_id}')">
+        ${renderAvatar(m.user, letter)}
+        <div>
+          <div class="font-bold">${escapeHtml(displayName)}</div>
+          <div class="text-xs text-dim">${escapeHtml(joinedLabel)} ${escapeHtml(dateStr)}</div>
+        </div>
       </button>
     `;
     }).join('');
+    hydrateAvatars(list);
   }).catch(e => {
     list.innerHTML = `<p class="text-danger">${escapeHtml(e.message)}</p>`;
   });

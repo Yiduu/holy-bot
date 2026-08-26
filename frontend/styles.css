@@ -4205,6 +4205,77 @@ textarea.form-control {
   gap: 2px;
 }
 
+/* ─── Mentee Goal Add Trigger & Form ────────────────────────────── */
+.goal-add-trigger-wrap {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-dim);
+}
+
+.goal-add-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-dim);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.goal-add-trigger-btn:hover {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.goal-add-row {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-dim);
+  animation: fadeIn 0.2s ease;
+}
+
+.goal-add-row-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.goal-date-field {
+  position: relative;
+  flex: 1;
+  min-width: 140px;
+}
+
+.goal-date-placeholder {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text3);
+  font-size: 0.75rem;
+}
+
+.goal-add-date.has-value + .goal-date-placeholder {
+  display: none;
+}
+
 /* Hidden mirror of the content, used purely so the ticker's downward
    scroll can wrap seamlessly */
 .goal-ticker-clone {

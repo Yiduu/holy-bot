@@ -5753,14 +5753,22 @@ async function refreshMenteeGoals(menteeId) {
       <div class="goal-panel-viewport">
         <div class="goal-panel-items">${itemsHtml}</div>
       </div>
-      <div class="goal-add-row">
+      <div id="goalAddTrigger-${menteeId}" class="goal-add-trigger-wrap">
+        <button type="button" class="goal-add-trigger-btn" onclick="showGoalAddForm('${menteeId}')">
+          ${menteeIcon('plus', 13)}<span>${t('mentee_goals_add')}</span>
+        </button>
+      </div>
+      <div id="goalAddForm-${menteeId}" class="goal-add-row" style="display:none;">
         <textarea id="goalInput-${menteeId}" class="form-control text-sm goal-add-input" placeholder="${t('mentee_goal_placeholder')}" maxlength="200" rows="2"></textarea>
         <div class="goal-add-row-bottom">
           <div class="goal-date-field">
             <input type="date" id="goalDate-${menteeId}" class="form-control text-sm goal-add-date" oninput="this.classList.toggle('has-value', !!this.value)">
             <span class="goal-date-placeholder">${menteeIcon('calendar', 13)}<span>${t('mentee_goal_due_date_placeholder')}</span></span>
           </div>
-          <button class="btn btn-outline btn-sm goal-add-btn" onclick="addMenteeGoal('${menteeId}')">${menteeIcon('plus', 13)}${t('mentee_goal_add_btn')}</button>
+          <div class="flex gap-8 items-center">
+            <button type="button" class="btn btn-ghost btn-xs" onclick="hideGoalAddForm('${menteeId}')">${t('btn_cancel')}</button>
+            <button type="button" class="btn btn-primary btn-sm goal-add-btn" onclick="addMenteeGoal('${menteeId}')">${menteeIcon('plus', 13)}${t('mentee_goal_add_btn')}</button>
+          </div>
         </div>
       </div>`;
 
@@ -5777,6 +5785,26 @@ async function refreshMenteeGoals(menteeId) {
   } catch (e) {
     panel.innerHTML = `<div class="text-xs" style="color:var(--danger)">${escapeHtml(e.message)}</div>`;
   }
+}
+
+function showGoalAddForm(menteeId) {
+  haptic('light');
+  const trigger = $(`goalAddTrigger-${menteeId}`);
+  const form = $(`goalAddForm-${menteeId}`);
+  if (trigger) trigger.style.display = 'none';
+  if (form) {
+    form.style.display = 'block';
+    const input = $(`goalInput-${menteeId}`);
+    input?.focus();
+  }
+}
+
+function hideGoalAddForm(menteeId) {
+  haptic('light');
+  const trigger = $(`goalAddTrigger-${menteeId}`);
+  const form = $(`goalAddForm-${menteeId}`);
+  if (trigger) trigger.style.display = 'flex';
+  if (form) form.style.display = 'none';
 }
 
 // Applies a goal_created/goal_updated/goal_deleted socket payload (or a
@@ -5867,6 +5895,7 @@ async function addMenteeGoal(menteeId) {
     haptic('light');
     if (input) input.value = '';
     if (dateInput) { dateInput.value = ''; dateInput.classList.remove('has-value'); }
+    hideGoalAddForm(menteeId);
     applyMentorGoalRealtime('added', goal, menteeId);
   } catch (e) {
     showToast(e.message, 'error');

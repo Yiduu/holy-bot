@@ -560,10 +560,10 @@
               <span data-i18n="my_goals_title">My Goals</span>
               <span id="myGoalsLiveDot" class="live-dot live-dot--live" title="Live"></span>
             </div>
-            <span id="myGoalsProgressLabel" class="my-goals-progress-label">0/0</span>
-          </div>
-          <div class="my-goals-progress-track">
-            <div id="myGoalsProgressFill" class="my-goals-progress-fill" style="width:0%"></div>
+            <div class="my-goals-head-right">
+              <span id="myGoalsProgressLabel" class="my-goals-progress-label">0/0</span>
+              <div id="myGoalsProgressTrack" class="my-goals-progress-ring-container"></div>
+            </div>
           </div>
           <div class="my-goals-viewport">
             <div id="myGoalsList" class="my-goals-list"></div>
@@ -1509,6 +1509,16 @@
       </div>
     </nav>
 
+    <!-- ── Floating Action Button (FAB) ────────────────────────── -->
+    <button id="fabMain" class="fab-main hidden" onclick="handleFabClick()" aria-label="Quick Action">
+      <span class="fab-icon" id="fabIcon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </span>
+    </button>
+
   </div><!-- /#app -->
 
   <!-- ─── New Support Ticket Modal ──────────────────────────────── -->
@@ -1877,25 +1887,15 @@
       });
     });
 
-    /* ── Skeleton loader helper ──────────────────────────────── */
+    /* ── Skeleton loader helper (Shimmer) ───────────────────── */
     window.skeletonHTML = (rows = 3) => Array.from({ length: rows }, () => `
-    <div style="
-      background:var(--surface);border-radius:10px;padding:16px;
-      margin-bottom:10px;animation:skelPulse 1.4s ease infinite;
-    ">
-      <div style="height:12px;width:60%;background:var(--bg3);border-radius:6px;margin-bottom:10px"></div>
-      <div style="height:10px;width:85%;background:var(--bg3);border-radius:6px;margin-bottom:8px"></div>
-      <div style="height:10px;width:40%;background:var(--bg3);border-radius:6px"></div>
+    <div class="skeleton-shimmer-card">
+      <div class="skeleton-shimmer-overlay"></div>
+      <div class="skeleton-placeholder-title"></div>
+      <div class="skeleton-placeholder-text"></div>
+      <div class="skeleton-placeholder-sub"></div>
     </div>
   `).join('');
-
-    const skelStyle = document.createElement('style');
-    skelStyle.textContent = `
-    @keyframes skelPulse {
-      0%,100%{opacity:1} 50%{opacity:.45}
-    }
-  `;
-    document.head.appendChild(skelStyle);
 
     /* ── Replace spinners with skeletons on list containers ──── */
     ['mentorsList', 'requestsList', 'menteesList', 'privateSessionsList', 'upcomingSessions', 'journalEntriesList']

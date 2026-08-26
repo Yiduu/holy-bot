@@ -1524,7 +1524,59 @@ function navigate(page) {
       $('journalViewToggle').innerHTML = ICON_CALENDAR + ' ' + t('Calendar');
       break;
   }
+
+  // Update Floating Action Button (FAB) state
+  updateFab();
+
   updateSessionsBadge();
+}
+
+// ─── Floating Action Button (FAB) ────────────────────────────
+const FAB_ICONS = {
+  plus: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+  pencil: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>',
+  search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
+};
+
+function updateFab() {
+  const fab = $('fabMain');
+  const icon = $('fabIcon');
+  if (!fab || !icon) return;
+
+  switch (currentPage) {
+    case 'dashboard':
+      fab.classList.remove('hidden');
+      icon.innerHTML = FAB_ICONS.plus;
+      fab.setAttribute('aria-label', t('btn_new_entry') || 'New Entry');
+      break;
+    case 'journal':
+      fab.classList.remove('hidden');
+      icon.innerHTML = FAB_ICONS.pencil;
+      fab.setAttribute('aria-label', t('btn_new_entry') || 'New Entry');
+      break;
+    case 'mentors':
+      fab.classList.remove('hidden');
+      icon.innerHTML = FAB_ICONS.search;
+      fab.setAttribute('aria-label', t('search_mentors_placeholder') || 'Search Mentors');
+      break;
+    default:
+      // Hide on chat, sessions, my-mentees, support, requests, settings, etc.
+      fab.classList.add('hidden');
+      break;
+  }
+}
+
+function handleFabClick() {
+  haptic('medium');
+  if (currentPage === 'dashboard' || currentPage === 'journal') {
+    showNewJournalEntry();
+  } else if (currentPage === 'mentors') {
+    const input = $('mentorSearchInput');
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 }
 
 function toggleChatInput(visible) {
@@ -2380,11 +2432,47 @@ function renderMyGoalItem(g) {
     </div>`;
 }
 
+function renderProgressRing(percentage, size = 44) {
+  const strokeWidth = 4;
+  const radius = (size - strokeWidth) / 2;
+  const center = size / 2;
+  const circumference = 2 * Math.PI * radius;
+  const cleanPct = Math.min(100, Math.max(0, Math.round(percentage || 0)));
+  const offset = circumference - (cleanPct / 100) * circumference;
+
+  return `
+    <div class="progress-ring-wrapper" style="width:${size}px;height:${size}px;">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="progress-ring-svg">
+        <circle
+          class="progress-ring-circle-bg"
+          cx="${center}"
+          cy="${center}"
+          r="${radius}"
+          fill="none"
+          stroke-width="${strokeWidth}"
+        />
+        <circle
+          class="progress-ring-circle-fill"
+          cx="${center}"
+          cy="${center}"
+          r="${radius}"
+          fill="none"
+          stroke-width="${strokeWidth}"
+          stroke-linecap="round"
+          stroke-dasharray="${circumference}"
+          stroke-dashoffset="${offset}"
+        />
+      </svg>
+      <span class="progress-ring-text">${cleanPct}%</span>
+    </div>
+  `;
+}
+
 function updateMyGoalsProgressBar() {
   const { total, done, pct } = myGoalsProgress();
-  const fill = $('myGoalsProgressFill');
+  const track = $('myGoalsProgressTrack');
   const label = $('myGoalsProgressLabel');
-  if (fill) fill.style.width = `${pct}%`;
+  if (track) track.innerHTML = renderProgressRing(pct, 44);
   if (label) label.textContent = t('my_goals_progress_label', { done, total });
 }
 

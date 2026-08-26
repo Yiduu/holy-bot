@@ -34,16 +34,18 @@ console.log('[Bot] MINI_APP_URL from env =', process.env.MINI_APP_URL);
 const APP_URL = process.env.MINI_APP_URL || 'https://holy-bot-etvy.onrender.com';
 console.log('[Bot] APP_URL set to =', APP_URL);
 
-// Set the chat menu button to "Holy App" (appears in the chat list, alongside the bot's name)
-bot.setChatMenuButton({
-  menu_button: {
-    type: 'web_app',
-    text: 'Holy App',
-    web_app: {
-      url: APP_URL
+// Set the chat menu button only if explicitly enabled in env (prevents wiping BotFather settings on deploy)
+if (process.env.AUTO_SET_MENU_BUTTON === 'true') {
+  bot.setChatMenuButton({
+    menu_button: {
+      type: 'web_app',
+      text: process.env.MENU_BUTTON_TEXT || 'Holy App',
+      web_app: {
+        url: APP_URL
+      }
     }
-  }
-}).catch(err => console.warn('[Bot] Failed to set menu button:', err.message));
+  }).catch(err => console.warn('[Bot] Failed to set menu button:', err.message));
+}
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_MAX_MENTEES = parseInt(process.env.MAX_MENTEES_DEFAULT || '3');

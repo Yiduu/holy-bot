@@ -5073,6 +5073,7 @@ textarea.form-control {
   font-weight: 700;
   background: linear-gradient(180deg, #FFF6D6 0%, #F5D37B 45%, #C9A84C 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 4px 16px rgba(201, 168, 76, 0.4));
   letter-spacing: -0.02em;
@@ -5081,6 +5082,7 @@ textarea.form-control {
 [data-theme="light"] .streak-hero-number {
   background: linear-gradient(180deg, #A87610 0%, #C9A84C 50%, #7D5708 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 8px rgba(184, 134, 11, 0.25));
 }
@@ -5116,7 +5118,6 @@ textarea.form-control {
   .streak-hero-number {
     font-size: 3.5rem;
   }
-}
 
   .ob-quick-controls {
     gap: 6px;

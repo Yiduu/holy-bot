@@ -4986,36 +4986,75 @@ textarea.form-control {
   font-size: 1.2rem;
 }
 
-/* ─── Streak Card: large hero variant ──────────────────────────── */
+/* ─── Streak Card: large hero variant (Golden Brand) ────────── */
 .streak-card-hero {
-  background: linear-gradient(160deg, rgba(201, 168, 76, 0.16) 0%, rgba(var(--bg-rgb), 0.6) 65%);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-gold);
-  padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(130% 120% at 50% -10%, rgba(201, 168, 76, 0.28) 0%, rgba(32, 24, 14, 0.9) 45%, rgba(13, 15, 20, 0.98) 100%);
+  border: 1.5px solid rgba(201, 168, 76, 0.45);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(201, 168, 76, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  padding: 24px 20px 22px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+[data-theme="light"] .streak-card-hero {
+  background: radial-gradient(130% 120% at 50% -10%, rgba(201, 168, 76, 0.32) 0%, rgba(255, 252, 245, 0.98) 55%, #F4ECE0 100%);
+  border-color: rgba(184, 134, 11, 0.45);
+  box-shadow: 0 10px 30px rgba(180, 130, 30, 0.16), 0 0 20px rgba(201, 168, 76, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.streak-card-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.8s ease;
+}
+
+.streak-card-hero:hover::before {
+  left: 140%;
 }
 
 .streak-hero-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 4px 14px;
+  border-radius: 99px;
+  background: rgba(201, 168, 76, 0.15);
+  border: 1px solid rgba(201, 168, 76, 0.35);
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--gold-light);
   text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .streak-hero-label {
+  background: rgba(201, 168, 76, 0.2);
+  color: #8C6615;
+  border-color: rgba(184, 134, 11, 0.4);
 }
 
 .streak-hero-label .streak-icon {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   background: transparent;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
 .streak-hero-main {
@@ -5023,45 +5062,61 @@ textarea.form-control {
   align-items: baseline;
   justify-content: center;
   gap: 10px;
-  margin: 10px 0 6px;
+  margin: 12px 0 6px;
+  position: relative;
 }
 
 .streak-hero-number {
   font-family: var(--font-display);
-  font-size: 4.2rem;
+  font-size: 4.4rem;
   line-height: 1;
   font-weight: 700;
-  color: var(--gold);
-  text-shadow: 0 0 24px rgba(201, 168, 76, 0.35);
+  background: linear-gradient(180deg, #FFF6D6 0%, #F5D37B 45%, #C9A84C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 16px rgba(201, 168, 76, 0.4));
+  letter-spacing: -0.02em;
+}
+
+[data-theme="light"] .streak-hero-number {
+  background: linear-gradient(180deg, #A87610 0%, #C9A84C 50%, #7D5708 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(184, 134, 11, 0.25));
 }
 
 .streak-hero-unit {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text2);
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+[data-theme="light"] .streak-hero-unit {
+  color: #8C6615;
 }
 
 .streak-hero-sub {
-  font-size: 0.85rem;
-  color: var(--text3);
-  margin-bottom: 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 18px;
 }
 
 .streak-hero-btn {
   width: 100%;
-  max-width: 260px;
+  max-width: 270px;
   padding: 13px 20px;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.03em;
 }
 
 @media (max-width: 360px) {
   .streak-hero-number {
-    font-size: 3.4rem;
+    font-size: 3.5rem;
   }
-
-  .onboarding-topbar {
-    gap: 6px;
-  }
+}
 
   .ob-quick-controls {
     gap: 6px;
@@ -7401,58 +7456,133 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* ─── Streak card: weekly progress strip ────────────────────── */
+/* ─── Streak card: weekly progress strip (Premium Day Circles) ── */
 .streak-week {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 2px 0 16px;
+  margin: 4px 0 20px;
+  width: 100%;
+  max-width: 340px;
 }
 
 .streak-week-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  flex: 1;
 }
 
 .streak-week-dot {
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--border-dim);
+  border: 1.5px solid rgba(201, 168, 76, 0.22);
   color: transparent;
-  background: rgba(var(--bg-rgb), 0.4);
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s var(--ease-spring);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s var(--ease-spring);
+  position: relative;
+}
+
+[data-theme="light"] .streak-week-dot {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(184, 134, 11, 0.25);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .streak-week-dot.is-read {
-  background: linear-gradient(150deg, var(--gold-light), var(--gold));
-  border-color: transparent;
-  color: #1a1607;
-  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.3);
+  background: linear-gradient(135deg, #FFEAA0 0%, #E2B94A 45%, #9E7920 100%);
+  border-color: rgba(255, 240, 180, 0.6);
+  color: #241A04;
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.85);
+  transform: scale(1.04);
+}
+
+.streak-week-dot.is-read svg {
+  stroke-width: 3;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.4));
 }
 
 .streak-week-dot.is-frozen {
-  background: linear-gradient(150deg, #8FD1F0, #4E9FC7);
-  border-color: transparent;
-  color: #0c2430;
-  box-shadow: 0 0 0 1px rgba(78, 159, 199, 0.35);
+  background: linear-gradient(135deg, #CEEEFD 0%, #63B3ED 50%, #2B6CB0 100%);
+  border-color: rgba(190, 235, 255, 0.6);
+  color: #062338;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .streak-week-dot.is-today {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--gold);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold), 0 0 14px rgba(201, 168, 76, 0.5);
+  transform: scale(1.1);
+  animation: todayDotPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes todayDotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold), 0 0 10px rgba(201, 168, 76, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold-light), 0 0 18px rgba(201, 168, 76, 0.75);
+  }
 }
 
 .streak-week-label {
-  font-size: 0.62rem;
-  font-weight: 600;
-  color: var(--text3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text2);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.streak-week-dot.is-read + .streak-week-label,
+.streak-week-dot.is-today + .streak-week-label {
+  color: var(--gold);
+}
+
+/* ─── Streak Celebration Animation ──────────────────────────── */
+.streak-card.streak-celebrate {
+  animation: streakCelebrateCard 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes streakCelebrateCard {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.03); box-shadow: 0 0 40px rgba(201, 168, 76, 0.6), 0 16px 40px rgba(0, 0, 0, 0.6); }
+  70% { transform: scale(0.99); }
+  100% { transform: scale(1); }
+}
+
+.streak-card.streak-celebrate .streak-flame {
+  animation: flameCelebrate 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes flameCelebrate {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.5) rotate(15deg); filter: drop-shadow(0 0 16px #FFF0A0); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.streak-card.streak-celebrate .streak-hero-number {
+  animation: numberPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes numberPop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); filter: drop-shadow(0 0 24px #FFE896); }
+  100% { transform: scale(1); }
+}
+
+/* Golden Particle Canvas Container */
+#streakConfettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* ─── Streak card: reminder opt-in nudge ────────────────────── */

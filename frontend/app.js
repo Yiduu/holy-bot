@@ -2193,12 +2193,105 @@ async function loadStreak() {
 }
 const loadDashboard = window.loadDashboard;
 
+function triggerStreakCelebration(cardEl) {
+  if (!cardEl) cardEl = $('streakCard');
+  if (cardEl) {
+    cardEl.classList.remove('streak-celebrate');
+    void cardEl.offsetWidth; // force DOM reflow
+    cardEl.classList.add('streak-celebrate');
+    setTimeout(() => cardEl?.classList.remove('streak-celebrate'), 1000);
+  }
+
+  let canvas = document.getElementById('streakConfettiCanvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'streakConfettiCanvas';
+    document.body.appendChild(canvas);
+  }
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const rect = cardEl ? cardEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 3;
+
+  const colors = ['#FFE896', '#F5D37B', '#C9A84C', '#FFFFFF', '#E2B94A', '#FFA500'];
+  const symbols = ['★', '✦', '✧', '●', '■'];
+  const particles = [];
+  const particleCount = 42;
+
+  for (let i = 0; i < particleCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 4 + Math.random() * 8;
+    particles.push({
+      x: originX,
+      y: originY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 3.5,
+      size: 9 + Math.random() * 9,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      symbol: symbols[Math.floor(Math.random() * symbols.length)],
+      rotation: Math.random() * 360,
+      rotSpeed: (Math.random() - 0.5) * 14,
+      alpha: 1,
+      decay: 0.015 + Math.random() * 0.018,
+      gravity: 0.22,
+    });
+  }
+
+  let animId;
+  const startTime = performance.now();
+
+  function animate(now) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let active = false;
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.98;
+      p.rotation += p.rotSpeed;
+      p.alpha -= p.decay;
+
+      if (p.alpha > 0) {
+        active = true;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.font = `bold ${p.size}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(201, 168, 76, 0.8)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(p.symbol, 0, 0);
+        ctx.restore();
+      }
+    });
+
+    if (active && now - startTime < 2200) {
+      animId = requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      cancelAnimationFrame(animId);
+    }
+  }
+
+  animId = requestAnimationFrame(animate);
+}
+
 async function markStreakRead() {
   if ($('markReadBtn').disabled) return;
   haptic('medium');
   try {
     const s = await apiFetch('/api/streaks/mark', { method: 'POST' });
     haptic('success');
+    triggerStreakCelebration($('streakCard'));
 
     if (s.milestone) {
       showEngagementPopup({
@@ -2210,9 +2303,6 @@ async function markStreakRead() {
         variant: 'gold',
         onAction: () => checkAndShowRatingPopup(),
       });
-      const card = $('streakCard');
-      card.classList.add('streak-celebrate');
-      setTimeout(() => card.classList.remove('streak-celebrate'), 1200);
     } else if (s.freeze_used) {
       showToast(t('streak_saver_used'), 'success');
     } else if (s.was_reset) {

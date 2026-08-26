@@ -5599,32 +5599,45 @@ function renderMenteesList() {
     const goalsLabel = fu.total_goals > 0
       ? t('mentee_goals_progress', { done: fu.total_goals - fu.open_goals, total: fu.total_goals })
       : t('mentee_goals_add');
+    const lastActiveStr = user.last_active ? timeAgo(user.last_active) : (t('mentee_status_never_active') || 'Never active');
 
     html += `
-      <div class="card mb-12">
-        <div class="flex justify-between items-start mb-8">
-          <div class="flex items-center gap-8">
+      <div class="card mb-16" style="padding: 16px;">
+        <!-- Row 1: Name (left) | Last Active (right) -->
+        <div class="flex justify-between items-start mb-10" style="gap: 12px;">
+          <div class="flex items-center gap-10" style="min-width: 0;">
             ${renderAvatar(user, letter)}
-            <div>
-              <div class="font-bold" style="color:var(--gold)">${escapeHtml(displayName)}</div>
-              <div class="text-xs text-dim">${t('Joined')} ${new Date(assigned_at).toLocaleDateString(currentLanguage === 'am' ? 'am-ET' : undefined)}</div>
-              ${renderMenteeStatusLine(user)}
-              ${renderMenteeStreakBadge(user.telegram_id)}
+            <div style="min-width: 0;">
+              <div class="font-bold" style="color:var(--gold); font-size: 0.95rem; word-break: break-word;">${escapeHtml(displayName)}</div>
+              <!-- Streak badge placed directly below the name -->
+              <div style="margin-top: 4px;">
+                ${renderMenteeStreakBadge(user.telegram_id)}
+              </div>
             </div>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="endMentorship('${assignId}')">${t('btn_end')}</button>
+          <div class="text-xs text-dim text-right" style="flex-shrink: 0; white-space: nowrap; margin-top: 2px;">
+            ${lastActiveStr}
+          </div>
         </div>
-        <div class="flex gap-8 mb-8" style="flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm flex-1" onclick="openChat('${user.telegram_id}')">${t('btn_message')}</button>
-          <!-- Transfer button: opens the Transfer Mentee modal -->
-          <button class="btn btn-outline btn-sm" style="flex:0 0 auto;" onclick="openTransferModal('${assignId}', '${user.telegram_id}', '${escapeHtml(displayName)}')">${t('btn_transfer')}</button>
+
+        <!-- Row 2: Status line (Online / Needs follow-up) with ample space -->
+        <div class="mb-12" style="min-height: 24px;">
+          ${renderMenteeStatusLine(user)}
         </div>
+
+        <!-- Row 3: Action buttons (Transfer, End) - spacious 2-column layout -->
+        <div class="flex gap-10 mb-12" style="flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm flex-1" style="min-height: 40px; white-space: normal; text-align: center; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="openTransferModal('${assignId}', '${user.telegram_id}', '${escapeHtml(displayName)}')">${t('btn_transfer')}</button>
+          <button class="btn btn-danger btn-sm flex-1" style="min-height: 40px; white-space: normal; text-align: center; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="endMentorship('${assignId}')">${t('btn_end')}</button>
+        </div>
+
+        <!-- Goals toggle and note below -->
         <button class="goal-toggle-btn" onclick="toggleMenteeGoals('${user.telegram_id}', this)">
           <span style="display:flex;align-items:center;gap:6px;">${menteeIcon('target', 14)}${goalsLabel}</span>
           <span class="goal-toggle-caret">${menteeIcon('chevronDown', 14)}</span>
         </button>
         <div id="goalPanel-${user.telegram_id}" class="goal-panel" style="display:none" data-mentee-id="${user.telegram_id}"></div>
-        <div class="form-group mb-0" style="margin-top:8px">
+        <div class="form-group mb-0" style="margin-top:10px">
           <textarea id="note-${user.telegram_id}" class="form-control text-sm" data-i18n="Private note about this mentee..." placeholder="${t('Private note about this mentee...')}" rows="2" onblur="saveMentorNote('${user.telegram_id}')"></textarea>
         </div>
       </div>`;

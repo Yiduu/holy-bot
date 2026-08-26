@@ -3745,17 +3745,19 @@ textarea.form-control {
 
 /* ─── Mentee activity status (My Mentees page) ─────────────────── */
 .mentee-status-line {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 0.72rem;
-  color: var(--text3);
-  margin-top: 2px;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text2);
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 .mentee-status-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
   background: var(--text3);
@@ -3772,6 +3774,22 @@ textarea.form-control {
 
 .mentee-status-dot.stale {
   background: var(--danger);
+  box-shadow: 0 0 6px rgba(224, 92, 92, 0.4);
+}
+
+.mentee-status-line .chip-red {
+  background: rgba(224, 92, 92, 0.15);
+  border: 1px solid rgba(224, 92, 92, 0.35);
+  color: var(--danger);
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: normal;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ─── Mentee Bible Streak badge (My Mentees page) ───────────────── */

@@ -4757,10 +4757,24 @@ async function loadSettings() {
       }
     }
 
-    $('userAnonId').textContent = currentUser?.anonymous_id || '';
-    $('userRole').textContent = currentUser?.role || '';
+    updateProfileIdentity();
     loadProfilePhoto();
   } catch (e) { showToast(e.message, 'error'); }
+}
+
+/** Syncs the small pieces of "who am I" text/chips that appear in both the
+ * Profile hero (view-only) and the Edit Profile modal (editable context). */
+function updateProfileIdentity() {
+  const name = currentUser?.user_settings?.display_name || currentUser?.anonymous_id || '—';
+  const heroName = $('profileHeroName');
+  if (heroName) heroName.textContent = name;
+
+  const anonId = currentUser?.anonymous_id || '';
+  const role = currentUser?.role || '';
+  if ($('userAnonId')) $('userAnonId').textContent = anonId;
+  if ($('userRole')) $('userRole').textContent = role;
+  if ($('editProfileAnonId')) $('editProfileAnonId').textContent = anonId;
+  if ($('editProfileRole')) $('editProfileRole').textContent = role;
 }
 
 function avatarInitials() {
@@ -4769,32 +4783,37 @@ function avatarInitials() {
   return text ? text.charAt(0).toUpperCase() : '?';
 }
 
+// The avatar now renders in two places at once — the read-only Profile
+// hero and the editable Edit Profile modal — so this keeps both in sync
+// from a single fetch instead of loading the photo twice.
 async function loadProfilePhoto() {
-  const preview = $('settingsAvatarPreview');
+  const targets = [$('settingsAvatarPreview'), $('editAvatarPreview')].filter(Boolean);
   const removeBtn = $('removeAvatarBtn');
-  if (!preview) return;
+  if (!targets.length) return;
 
-  preview.textContent = avatarInitials();
-  preview.classList.remove('has-photo');
+  const initials = avatarInitials();
+  targets.forEach(el => { el.textContent = initials; el.classList.remove('has-photo'); });
   removeBtn?.classList.add('hidden');
 
   if (!currentUser?.photo_file_id) return;
 
-  preview.classList.add('avatar-loading');
+  targets.forEach(el => el.classList.add('avatar-loading'));
   try {
     const url = await loadAvatarUrl(currentUser.telegram_id, currentUser.photo_updated_at || '');
-    const img = document.createElement('img');
-    img.alt = '';
-    img.onerror = () => { preview.textContent = avatarInitials(); preview.classList.remove('has-photo'); removeBtn?.classList.add('hidden'); };
-    img.src = url;
-    preview.innerHTML = '';
-    preview.appendChild(img);
-    preview.classList.add('has-photo');
+    targets.forEach(el => {
+      const img = document.createElement('img');
+      img.alt = '';
+      img.onerror = () => { el.textContent = initials; el.classList.remove('has-photo'); removeBtn?.classList.add('hidden'); };
+      img.src = url;
+      el.innerHTML = '';
+      el.appendChild(img);
+      el.classList.add('has-photo');
+    });
     removeBtn?.classList.remove('hidden');
   } catch (e) {
     console.error('Failed to load profile photo:', e);
   } finally {
-    preview.classList.remove('avatar-loading');
+    targets.forEach(el => el.classList.remove('avatar-loading'));
   }
 }
 
@@ -5042,8 +5061,10 @@ async function saveSettings() {
     if (currentUser) {
       currentUser.user_settings = { ...(currentUser.user_settings || {}), ...updated };
     }
+    updateProfileIdentity();
     haptic('success');
     showToast(t('settings_saved') || 'Settings saved', 'success');
+    return true;
   } catch (e) {
     haptic('error');
     if (e.nickname_taken) {
@@ -5051,7 +5072,27 @@ async function saveSettings() {
     } else {
       showToast(e.message, 'error');
     }
+    return false;
   }
+}
+
+// ─── Edit Profile modal ────────────────────────────────────────
+function openEditProfileModal() {
+  haptic('light');
+  clearFieldError('settingDisplayName');
+  $('editProfileModal')?.classList.add('open');
+}
+
+function closeEditProfileModal() {
+  haptic('light');
+  $('editProfileModal')?.classList.remove('open');
+}
+
+async function saveProfileFromModal() {
+  const ok = await saveSettings();
+  // Leave the modal open if the save failed (e.g. nickname taken) so the
+  // person can see and fix the inline error instead of losing it.
+  if (ok) closeEditProfileModal();
 }
 
 async function toggleAcceptingRequests() {

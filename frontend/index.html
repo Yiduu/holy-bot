@@ -615,12 +615,11 @@
           </button>
           <button class="btn btn-outline" onclick="navigate('settings')">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="3" />
-              <path
-                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
             </svg>
-            <span data-i18n="Settings">Settings</span>
+            <span data-i18n="Profile">Profile</span>
           </button>
         </div>
 
@@ -980,114 +979,109 @@
     <!-- ── Page: Settings ────────────────────────────────────────── -->
     <div id="page-settings" class="page">
       <div class="app-header">
-        <h2 data-i18n="settings_title">Settings</h2>
+        <h2 data-i18n="Profile">Profile</h2>
         <button class="btn btn-sm btn-primary" data-i18n="btn_save" onclick="saveSettings()">Save</button>
       </div>
       <div class="page-content">
-        <nav class="settings-nav" aria-label="Settings sections">
-          <button type="button" class="settings-nav-item active" data-target="settingsSectionIdentity"
-            onclick="jumpToSettingsSection(this, 'settingsSectionIdentity')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-              <path
-                d="m1.5 13v1a.5.5 0 0 0 .3379.4731 18.9718 18.9718 0 0 0 6.1621 1.0269 18.9629 18.9629 0 0 0 6.1621-1.0269.5.5 0 0 0 .3379-.4731v-1a6.5083 6.5083 0 0 0 -4.461-6.1676 3.5 3.5 0 1 0 -4.078 0 6.5083 6.5083 0 0 0 -4.461 6.1676zm4-9a2.5 2.5 0 1 1 2.5 2.5 2.5026 2.5026 0 0 1 -2.5-2.5zm2.5 3.5a5.5066 5.5066 0 0 1 5.5 5.5v.6392a18.08 18.08 0 0 1 -11 0v-.6392a5.5066 5.5066 0 0 1 5.5-5.5z">
-              </path>
-            </svg>
-            <span data-i18n="Identity">Identity</span>
-          </button>
-          <button type="button" class="settings-nav-item" data-target="settingsSectionDisplay"
-            onclick="jumpToSettingsSection(this, 'settingsSectionDisplay')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path
-                d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1 -1 1h-6v2h3v2H7v-2h3v-2H4a1 1 0 0 1 -1-1V5a1 1 0 0 1 1-1zm1 2v9h14V6z">
-              </path>
-            </svg>
-            <span data-i18n="Display">Display</span>
-          </button>
-          <button type="button" class="settings-nav-item" data-target="settingsSectionNotifications"
-            onclick="jumpToSettingsSection(this, 'settingsSectionNotifications')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 25" fill-rule="evenodd" clip-rule="evenodd">
-              <path
-                d="m11.9572 4.31201c-3.35401 0-6.00906 2.59741-6.00906 5.67742v3.29037c0 .1986-.05916.3927-.16992.5576l-1.62529 2.4193-.01077.0157c-.18701.2673-.16653.5113-.07001.6868.10031.1825.31959.3528.67282.3528h14.52603c.2546 0 .5013-.1515.6391-.3968.1315-.2343.1117-.4475-.0118-.6093-.0065-.0085-.0129-.0171-.0191-.0258l-1.7269-2.4194c-.121-.1695-.186-.3726-.186-.5809v-3.29037c0-1.54561-.6851-3.023-1.7072-4.00431-1.1617-1.01594-2.6545-1.67311-4.3019-1.67311zm-8.00906 5.67742c0-4.27483 3.64294-7.67742 8.00906-7.67742 2.2055 0 4.1606.88547 5.6378 2.18455.01.00877.0198.01774.0294.02691 1.408 1.34136 2.3419 3.34131 2.3419 5.46596v2.97007l1.5325 2.1471c.6775.8999.6054 1.9859.1552 2.7877-.4464.795-1.3171 1.4177-2.383 1.4177h-14.52603c-2.16218 0-3.55087-2.302-2.24739-4.1777l1.45056-2.1593zm4.05187 11.32257c0-.5523.44772-1 1-1h5.99999c.5523 0 1 .4477 1 1s-.4477 1-1 1h-5.99999c-.55228 0-1-.4477-1-1z">
-              </path>
-            </svg>
-            <span data-i18n="Notifications">Notifications</span>
-          </button>
-          <button type="button" id="settingsNavMentor" class="settings-nav-item hidden" data-target="mentorSettings"
-            onclick="jumpToSettingsSection(this, 'mentorSettings')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-              <path
-                d="m16 23c-3.859 0-7-3.141-7-7s3.141-7 7-7 7 3.141 7 7-3.141 7-7 7zm0-12c-2.757 0-5 2.243-5 5s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5z">
-              </path>
-              <path
-                d="m17.074 30h-2.148c-1.038 0-1.914-.811-1.994-1.846l-.125-1.635c-.687-.208-1.351-.484-1.985-.824l-1.246 1.067c-.788.677-1.98.631-2.715-.104l-1.52-1.52c-.734-.734-.78-1.927-.104-2.715l1.067-1.246c-.34-.635-.616-1.299-.824-1.985l-1.634-.125c-1.035-.079-1.846-.955-1.846-1.993v-2.148c0-1.038.811-1.914 1.846-1.994l1.635-.125c.208-.687.484-1.351.824-1.985l-1.068-1.247c-.676-.788-.631-1.98.104-2.715l1.52-1.52c.734-.734 1.927-.779 2.715-.104l1.246 1.067c.635-.34 1.299-.616 1.985-.824l.125-1.634c.08-1.034.956-1.845 1.994-1.845h2.148c1.038 0 1.914.811 1.994 1.846l.125 1.635c.687.208 1.351.484 1.985.824l1.246-1.067c.787-.676 1.98-.631 2.715.104l1.52 1.52c.734.734.78 1.927.104 2.715l-1.067 1.246c.34.635.616 1.299.824 1.985l1.634.125c1.035.079 1.846.955 1.846 1.993v2.148c0 1.038-.811 1.914-1.846 1.994l-1.635.125c-.208.687-.484 1.351-.824 1.985l1.067 1.246c.677.788.631 1.98-.104 2.715l-1.52 1.52c-.734.734-1.928.78-2.715.104l-1.246-1.067c-.635.34-1.299.616-1.985.824l-.125 1.634c-.079 1.035-.955 1.846-1.993 1.846z">
-              </path>
-            </svg>
-            <span>Mentor Profile</span>
-          </button>
-        </nav>
-        <!-- Identity -->
-        <div id="settingsSectionIdentity" class="section-title" data-i18n="Identity">Identity</div>
-        <div class="card mb-16">
-          <div class="flex justify-between items-center mb-8">
-            <span class="text-sm text-dim" data-i18n="Anonymous ID">Anonymous ID</span>
+        <!-- Profile hero: photo, name, quick identity, single entry point to edit -->
+        <div class="profile-hero">
+          <div class="avatar-preview-wrap">
+            <div id="settingsAvatarPreview" class="avatar-preview avatar-preview-xl" onclick="viewAvatar(this)">?</div>
+          </div>
+          <div id="profileHeroName" class="profile-hero-name">—</div>
+          <div class="profile-hero-meta">
+            <span id="userRole" class="chip chip-blue"></span>
             <span id="userAnonId" class="chip chip-gold"></span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-dim" data-i18n="Role">Role</span>
-            <span id="userRole" class="chip chip-blue"></span>
-          </div>
+          <button type="button" class="btn btn-outline btn-sm profile-edit-btn" onclick="openEditProfileModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            <span data-i18n="Edit Profile">Edit Profile</span>
+          </button>
         </div>
 
-        <!-- Profile Photo -->
-        <div class="section-title" data-i18n="Profile Photo">Profile Photo</div>
-        <div class="card mb-16">
-          <div class="avatar-upload-row">
-            <div class="avatar-preview-wrap">
-              <div id="settingsAvatarPreview" class="avatar-preview" onclick="viewAvatar(this)">?</div>
-            </div>
-            <div class="avatar-upload-info">
-              <div class="avatar-upload-title" data-i18n="avatar_help">Shown next to your nickname in chat and listings.
-                Your real name is never attached to it.</div>
-              <div class="avatar-upload-actions">
-                <button class="btn btn-outline btn-sm" onclick="$('avatarFileInput').click()"
-                  data-i18n="Change Photo">Change Photo</button>
-                <button id="removeAvatarBtn" class="btn btn-ghost btn-sm hidden" onclick="removeAvatar()"
-                  data-i18n="Remove">Remove</button>
-              </div>
-            </div>
-          </div>
-          <input type="file" id="avatarFileInput" accept="image/*" class="hidden"
-            onchange="onAvatarFileSelected(event)" />
-        </div>
+        <!-- Profile menu: clean, single-purpose entry points -->
+        <nav class="profile-menu-list" aria-label="Profile sections">
+          <button type="button" class="profile-menu-item" data-target="settingsSectionNotifications"
+            onclick="jumpToSettingsSection(this, 'settingsSectionNotifications')">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="Notifications">Notifications</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
 
-        <!-- Display -->
-        <div id="settingsSectionDisplay" class="section-title" data-i18n="Display">Display</div>
-        <div class="card mb-16">
-          <div class="form-group">
-            <label class="form-label" data-i18n="Display Name (still anonymous)">Display Name (still anonymous)</label>
-            <input id="settingDisplayName" class="input" type="text" autocomplete="off" placeholder="Custom nickname…"
-              data-i18n="display_name_placeholder" />
-          </div>
-          <div class="form-group">
-            <label class="form-label" data-i18n="Language">Language</label>
-            <div class="segmented-control" id="languageSegmented">
-              <button type="button" class="segmented-btn active" data-lang="en"
-                onclick="changeLanguage('en')">EN</button>
-              <button type="button" class="segmented-btn" data-lang="am" onclick="changeLanguage('am')">አማ</button>
-            </div>
-          </div>
-          <div class="mt-8 flex items-center gap-8">
-            <span class="text-sm text-dim" data-i18n="Theme">Theme</span>
-            <button class="theme-btn theme-btn-pill" onclick="toggleTheme()">
+          <button type="button" class="profile-menu-item mentor-hidden" onclick="openTopicModal()">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="settings_my_topics">My Topics</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
+
+          <button type="button" id="settingsNavMentor" class="profile-menu-item hidden" data-target="mentorSettings"
+            onclick="jumpToSettingsSection(this, 'mentorSettings')">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </span>
+            <span class="profile-menu-label">Mentor Profile</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
+
+          <button type="button" class="profile-menu-item" onclick="toggleLanguage()">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="Language">Language</span>
+            <span class="profile-menu-trailing lang-toggle-btn">EN</span>
+          </button>
+
+          <button type="button" class="profile-menu-item" onclick="toggleTheme()">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="4" r="4" />
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="Theme">Theme</span>
+            <span class="profile-menu-trailing theme-btn profile-menu-theme-indicator">
               <span class="theme-icon-svg"></span>
-              <span data-i18n="Toggle Dark/Light">Toggle Dark/Light</span>
-            </button>
-          </div>
-          <div class="divider"></div>
-          <button class="btn btn-outline btn-sm btn-full mentor-hidden" onclick="openTopicModal()"
-            data-i18n="settings_my_topics">My
-            Topics</button>
-        </div>
+            </span>
+          </button>
+        </nav>
 
         <!-- Notifications -->
         <div id="settingsSectionNotifications" class="section-title" data-i18n="Notifications">Notifications</div>
@@ -1500,12 +1494,12 @@
         <span data-i18n="Requests">Requests</span>
       </div>
       <div id="nav-settings" class="nav-item" onclick="navigate('settings')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         </svg>
-        <span data-i18n="Settings">Settings</span>
+        <span data-i18n="Profile">Profile</span>
       </div>
     </nav>
 
@@ -1719,6 +1713,55 @@
         <button id="deleteJournalBtn" class="btn btn-danger flex-1 hidden"
           onclick="deleteJournalEntry()">Delete</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Edit Profile ─────────────────────────────────── -->
+  <div id="editProfileModal" class="modal-overlay" onclick="if(event.target===this)closeEditProfileModal()">
+    <div class="modal-sheet edit-profile-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" data-i18n="Edit Profile">Edit Profile</div>
+
+      <div class="edit-profile-avatar-row">
+        <div class="avatar-preview-wrap">
+          <div id="editAvatarPreview" class="avatar-preview avatar-preview-xl">?</div>
+          <button type="button" class="avatar-camera-btn" onclick="$('avatarFileInput').click()"
+            aria-label="Change photo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>
+          </button>
+        </div>
+        <div class="edit-profile-avatar-actions">
+          <button type="button" class="btn btn-outline btn-sm" onclick="$('avatarFileInput').click()"
+            data-i18n="Change Photo">Change Photo</button>
+          <button type="button" id="removeAvatarBtn" class="btn btn-ghost btn-sm hidden" onclick="removeAvatar()"
+            data-i18n="Remove">Remove</button>
+        </div>
+      </div>
+      <input type="file" id="avatarFileInput" accept="image/*" class="hidden" onchange="onAvatarFileSelected(event)" />
+      <div class="text-xs text-dim edit-profile-hint" data-i18n="avatar_help">Shown next to your nickname in chat and
+        listings. Your real name is never attached to it.</div>
+
+      <div class="form-group mt-16">
+        <label class="form-label" data-i18n="Display Name (still anonymous)">Display Name (still anonymous)</label>
+        <input id="settingDisplayName" class="input" type="text" autocomplete="off" placeholder="Custom nickname…"
+          data-i18n="display_name_placeholder" />
+      </div>
+
+      <div class="edit-profile-meta-row">
+        <span class="text-sm text-dim" data-i18n="Anonymous ID">Anonymous ID</span>
+        <span id="editProfileAnonId" class="chip chip-gold"></span>
+      </div>
+      <div class="edit-profile-meta-row">
+        <span class="text-sm text-dim" data-i18n="Role">Role</span>
+        <span id="editProfileRole" class="chip chip-blue"></span>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-full mt-16" onclick="saveProfileFromModal()"
+        data-i18n="btn_save">Save</button>
     </div>
   </div>
 

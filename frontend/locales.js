@@ -421,7 +421,8 @@ const I18N = {
     "faq_q4": "How do scheduled sessions work?",
     "faq_a4": "Mentors create 1-on-1 or group session slots. You will get a notification reminder before the scheduled time with an instant join button.",
     "faq_q5": "How can I contact admin for support?",
-    "faq_a5": "Tap 'Contact Admin' or message our admin directly on Telegram at @YIDIDIYATAMIRUU. You can also submit support requests directly in the app."
+    "faq_a5": "Tap 'Contact Admin' or message our admin directly on Telegram at @YIDIDIYATAMIRUU. You can also submit support requests directly in the app.",
+    "contact_admin_telegram": "Or message admin on Telegram:"
   },
   am: {
     "btn_find_mentor": "አማካሪ ፈልግ",
@@ -841,6 +842,7 @@ const I18N = {
     "faq_q4": "የቀጠሮ ክፍለ-ጊዜዎች እንዴት ይሰራሉ?",
     "faq_a4": "አማካሪዎች በሚስማሙበት ሰዓት የድምፅ ወይም የቪዲዮ ክፍለ-ጊዜዎችን ያዘጋጃሉ። ክፍለ-ጊዜው ከመጀመሩ በፊት የሚቀላቀሉበትን ማስፈንጠሪያ የያዘ ማሳወቂያ ይደርስዎታል።",
     "faq_q5": "ከአስተዳዳሪ ጋር እንዴት መገናኘት እችላለሁ?",
-    "faq_a5": "በመገለጫዎ ውስጥ 'አስተዳዳሪን አግኝ' የሚለውን በመጫን ወይም በቀጥታ በቴሌግራም @YIDIDIYATAMIRUU ላይ መልእክት በመላክ ማግኘት ይችላሉ። እንዲሁም በመተግበሪያው የድጋፍ ጥያቄ መላክ ይችላሉ።"
+    "faq_a5": "በመገለጫዎ ውስጥ 'አስተዳዳሪን አግኝ' የሚለውን በመጫን ወይም በቀጥታ በቴሌግራም @YIDIDIYATAMIRUU ላይ መልእክት በመላክ ማግኘት ይችላሉ። እንዲሁም በመተግበሪያው የድጋፍ ጥያቄ መላክ ይችላሉ።",
+    "contact_admin_telegram": "ወይም አስተዳዳሪውን በቴሌግራም ያነጋግሩ:"
   }
 };

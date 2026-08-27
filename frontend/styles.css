@@ -1734,16 +1734,104 @@ textarea.form-control {
 }
 
 /* ─── Profile hub (Profile page hero + menu) ───────────────────
-   Replaces the old pill-nav + Identity/Photo/Display cards with a
-   single-purpose hero (photo, name, Edit Profile) and a clean
-   grouped menu list, so the page reads at a glance instead of
-   requiring a scan of several stacked cards. */
-.profile-hero {
+   Replaces the bulky stacked hero with a sleek, compact horizontal
+   card with an avatar edit badge, inline role, and quick edit link. */
+.profile-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition);
+}
+
+.profile-hero-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.avatar-preview-md {
+  width: 62px;
+  height: 62px;
+  font-size: 1.45rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--border-dim);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.profile-hero-avatar-wrap:hover .avatar-preview-md {
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.profile-avatar-edit-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--bg);
+  border: 2px solid var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition);
+}
+
+.profile-avatar-edit-btn:hover {
+  transform: scale(1.12);
+}
+
+.profile-hero-details {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.profile-hero-name-row {
+  display: flex;
   align-items: center;
-  text-align: center;
-  padding: 28px 16px 22px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-hero-name {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-edit-btn-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.profile-edit-btn-inline:hover {
+  text-decoration: underline;
 }
 
 .avatar-preview-xl {
@@ -1751,29 +1839,6 @@ textarea.form-control {
   height: 92px;
   font-size: 2rem;
   cursor: pointer;
-}
-
-.profile-hero-name {
-  margin-top: 14px;
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text);
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.profile-hero-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.profile-edit-btn {
-  margin-top: 16px;
 }
 
 .profile-menu-list {

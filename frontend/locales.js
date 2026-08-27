@@ -394,7 +394,18 @@ const I18N = {
     "Profile": "Profile",
     "Edit Profile": "Edit Profile",
     "Notifications": "Notifications",
-    "Mentor Profile": "Mentor Profile"
+    "Mentor Profile": "Mentor Profile",
+    "notifications_modal_subtitle": "Customize which alerts and reminders you receive.",
+    "mentor_profile_modal_subtitle": "Configure your mentorship details, availability, and focus areas.",
+    "Bio": "Bio",
+    "Specialization": "Specialization",
+    "Mentees I Mentor": "Mentees I Mentor",
+    "Max Mentees": "Max Mentees",
+    "Accept New Requests": "Accept New Requests",
+    "Save Changes": "Save Changes",
+    "Both": "Both",
+    "Male only": "Male only",
+    "Female only": "Female only"
   },
   am: {
     "btn_find_mentor": "አማካሪ ፈልግ",
@@ -785,8 +796,19 @@ const I18N = {
     "please_pick_datetime": "እባክዎ ቀንና ሰዓት ይምረጡ",
     "invalid_datetime_selected": "የተመረጠው ቀን ወይም ሰዓት ልክ አይደለም",
     "Profile": "መገለጫ",
-    "Edit Profile": "መገለጫ አርም",
+    "Edit Profile": "መገለጫ አስተካክል",
     "Notifications": "ማሳወቂያዎች",
-    "Mentor Profile": "የአማካሪ መገለጫ"
+    "Mentor Profile": "የአማካሪ መገለጫ",
+    "notifications_modal_subtitle": "የሚደርሱዎትን ማሳወቂያዎች እና ማስታወሻዎች ያስተካክሉ።",
+    "mentor_profile_modal_subtitle": "የአማካሪነት ዝርዝሮችዎን፣ ዝግጁነትዎን እና ርዕሶቻችሁን አስተካክሉ።",
+    "Bio": "ስለ እኔ",
+    "Specialization": "ልዩ መስክ",
+    "Mentees I Mentor": "የማማክራቸው ተመካሪዎች",
+    "Max Mentees": "ከፍተኛ የተመካሪዎች ብዛት",
+    "Accept New Requests": "አዳዲስ ጥያቄዎችን ተቀበል",
+    "Save Changes": "ለውጦችን አስቀምጥ",
+    "Both": "ሁለቱም",
+    "Male only": "ወንዶች ብቻ",
+    "Female only": "ሴቶች ብቻ"
   }
 };

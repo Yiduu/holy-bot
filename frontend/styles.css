@@ -1870,9 +1870,11 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* ─── Edit Profile modal ────────────────────────────────────── */
-.edit-profile-sheet {
-  max-width: 420px;
+/* ─── Profile Modals ────────────────────────────────────────── */
+.edit-profile-sheet,
+.notifications-sheet,
+.mentor-profile-sheet {
+  max-width: 440px;
   margin: 0 auto;
 }
 
@@ -1903,6 +1905,14 @@ textarea.form-control {
   align-items: center;
   padding: 10px 0;
   border-top: 1px solid var(--border-dim);
+}
+
+.mentor-profile-sheet .form-group {
+  margin-bottom: 14px;
+}
+
+.mentor-profile-sheet .bio-box {
+  cursor: pointer;
 }
 
 /* ─── Avatar Crop Modal ─────────────────────────────────────── */

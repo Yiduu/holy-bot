@@ -390,7 +390,11 @@ const I18N = {
     "Time": "Time",
     "btn_schedule_action": "Schedule",
     "please_pick_datetime": "Please pick date and time",
-    "invalid_datetime_selected": "Invalid date or time selected"
+    "invalid_datetime_selected": "Invalid date or time selected",
+    "Profile": "Profile",
+    "Edit Profile": "Edit Profile",
+    "Notifications": "Notifications",
+    "Mentor Profile": "Mentor Profile"
   },
   am: {
     "btn_find_mentor": "አማካሪ ፈልግ",
@@ -779,6 +783,10 @@ const I18N = {
     "Time": "ሰዓት",
     "btn_schedule_action": "ቀጠሮ ያዝ",
     "please_pick_datetime": "እባክዎ ቀንና ሰዓት ይምረጡ",
-    "invalid_datetime_selected": "የተመረጠው ቀን ወይም ሰዓት ልክ አይደለም"
+    "invalid_datetime_selected": "የተመረጠው ቀን ወይም ሰዓት ልክ አይደለም",
+    "Profile": "መገለጫ",
+    "Edit Profile": "መገለጫ አርም",
+    "Notifications": "ማሳወቂያዎች",
+    "Mentor Profile": "የአማካሪ መገለጫ"
   }
 };

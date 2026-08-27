@@ -4741,12 +4741,11 @@ async function loadSettings() {
     $('toggleStreak').checked = s.notify_streak_reminder !== false;
 
     if (currentUser?.role === 'mentor') {
-      $('mentorSettings').classList.remove('hidden');
       $('settingsNavMentor')?.classList.remove('hidden');
-      $('settingBio').value = s.bio || '';
+      if ($('settingBio')) $('settingBio').value = s.bio || '';
       renderBioDisplay(s.bio || '');
-      $('settingSpecialization').value = s.specialization || '';
-      $('settingMaxMentees').value = s.max_mentees || 5;
+      if ($('settingSpecialization')) $('settingSpecialization').value = s.specialization || '';
+      if ($('settingMaxMentees')) $('settingMaxMentees').value = s.max_mentees || 5;
       const menteeSex = s.preferred_mentee_sex || 'prefer_not';
       const menteeSexLabels = { prefer_not: 'Both', M: 'Male only', F: 'Female only' };
       selectMenteeSex(menteeSex, menteeSexLabels[menteeSex] || 'Both');
@@ -4770,11 +4769,16 @@ function updateProfileIdentity() {
   if (heroName) heroName.textContent = name;
 
   const anonId = currentUser?.anonymous_id || '';
-  const role = currentUser?.role || '';
+  const rawRole = currentUser?.role || '';
+  const formattedRole = rawRole ? (rawRole.charAt(0).toUpperCase() + rawRole.slice(1)) : '';
+
   if ($('userAnonId')) $('userAnonId').textContent = anonId;
-  if ($('userRole')) $('userRole').textContent = role;
+  if ($('userRole')) {
+    $('userRole').textContent = formattedRole;
+    $('userRole').style.display = formattedRole ? 'inline-block' : 'none';
+  }
   if ($('editProfileAnonId')) $('editProfileAnonId').textContent = anonId;
-  if ($('editProfileRole')) $('editProfileRole').textContent = role;
+  if ($('editProfileRole')) $('editProfileRole').textContent = formattedRole;
 }
 
 function avatarInitials() {
@@ -5093,6 +5097,38 @@ async function saveProfileFromModal() {
   // Leave the modal open if the save failed (e.g. nickname taken) so the
   // person can see and fix the inline error instead of losing it.
   if (ok) closeEditProfileModal();
+}
+
+// ─── Notifications modal ───────────────────────────────────────
+function openNotificationsModal() {
+  haptic('light');
+  $('notificationsModal')?.classList.add('open');
+}
+
+function closeNotificationsModal() {
+  haptic('light');
+  $('notificationsModal')?.classList.remove('open');
+}
+
+async function saveNotificationsFromModal() {
+  const ok = await saveSettings();
+  if (ok) closeNotificationsModal();
+}
+
+// ─── Mentor Profile modal ──────────────────────────────────────
+function openMentorProfileModal() {
+  haptic('light');
+  $('mentorProfileModal')?.classList.add('open');
+}
+
+function closeMentorProfileModal() {
+  haptic('light');
+  $('mentorProfileModal')?.classList.remove('open');
+}
+
+async function saveMentorProfileFromModal() {
+  const ok = await saveSettings();
+  if (ok) closeMentorProfileModal();
 }
 
 async function toggleAcceptingRequests() {

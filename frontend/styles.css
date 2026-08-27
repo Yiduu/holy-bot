@@ -1733,112 +1733,60 @@ textarea.form-control {
   flex: none;
 }
 
-/* ─── Profile hub (Profile page hero + menu) ───────────────────
-   Replaces the bulky stacked hero with a sleek, compact horizontal
-   card with an avatar edit badge, inline role, and quick edit link. */
-.profile-hero-card {
+/* ─── Profile hub (Profile page hero + menu) ─────────────────── */
+.profile-hero {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border-dim);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition);
+  text-align: center;
+  padding: 22px 16px 18px;
 }
 
-.profile-hero-avatar-wrap {
-  position: relative;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.avatar-preview-md {
-  width: 62px;
-  height: 62px;
-  font-size: 1.45rem;
+.avatar-preview-xl {
+  width: 84px;
+  height: 84px;
+  font-size: 1.9rem;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--border-dim);
+  cursor: pointer;
+  box-shadow: 0 0 0 3px var(--border-dim);
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
-.profile-hero-avatar-wrap:hover .avatar-preview-md {
-  box-shadow: 0 0 0 2px var(--gold);
-}
-
-.profile-avatar-edit-btn {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--gold);
-  color: var(--bg);
-  border: 2px solid var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition);
-}
-
-.profile-avatar-edit-btn:hover {
-  transform: scale(1.12);
-}
-
-.profile-hero-details {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.profile-hero-name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.avatar-preview-xl:hover {
+  box-shadow: 0 0 0 3px var(--gold);
 }
 
 .profile-hero-name {
+  margin-top: 12px;
   font-family: var(--font-display);
-  font-size: 1.12rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text);
-  max-width: 220px;
+  max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profile-edit-btn-inline {
-  display: inline-flex;
+.profile-hero-meta {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
-  padding: 0;
-  color: var(--gold);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  width: fit-content;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
 }
 
-.profile-edit-btn-inline:hover {
-  text-decoration: underline;
+.profile-edit-btn {
+  margin-top: 14px;
 }
 
-.avatar-preview-xl {
-  width: 92px;
-  height: 92px;
-  font-size: 2rem;
-  cursor: pointer;
+.profile-section-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  margin: 16px 4px 8px;
 }
 
 .profile-menu-list {
@@ -1848,7 +1796,7 @@ textarea.form-control {
   border: 1px solid var(--border-dim);
   border-radius: var(--radius);
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .profile-menu-item {
@@ -1938,9 +1886,73 @@ textarea.form-control {
 /* ─── Profile Modals ────────────────────────────────────────── */
 .edit-profile-sheet,
 .notifications-sheet,
-.mentor-profile-sheet {
-  max-width: 440px;
+.mentor-profile-sheet,
+.faq-sheet {
+  max-width: 460px;
   margin: 0 auto;
+}
+
+.faq-sheet {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.faq-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq-item {
+  background: var(--bg3);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.faq-item:hover {
+  background: rgba(var(--bg2-rgb), 0.9);
+}
+
+.faq-item.open {
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.faq-chevron {
+  color: var(--text3);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+  color: var(--gold);
+}
+
+.faq-answer {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-dim);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+.faq-item.open .faq-answer {
+  display: block;
 }
 
 .edit-profile-avatar-row {

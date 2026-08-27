@@ -976,41 +976,34 @@
       </div>
     </div>
 
-    <!-- ── Page: Settings ────────────────────────────────────────── -->
+    <!-- ── Page: Settings / Profile ────────────────────────────── -->
     <div id="page-settings" class="page">
       <div class="app-header">
         <h2 data-i18n="Profile">Profile</h2>
       </div>
       <div class="page-content">
-        <!-- Profile hero: sleek, compact card with avatar edit badge and identity -->
-        <div class="profile-hero-card">
-          <div class="profile-hero-avatar-wrap" onclick="openEditProfileModal()">
-            <div id="settingsAvatarPreview" class="avatar-preview avatar-preview-md" onclick="event.stopPropagation();viewAvatar(this)">?</div>
-            <button type="button" class="profile-avatar-edit-btn" onclick="event.stopPropagation();openEditProfileModal()" aria-label="Edit Profile">
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
-              </svg>
-            </button>
+        <!-- Profile hero: photo, name, quick role, and dedicated Edit Profile button -->
+        <div class="profile-hero">
+          <div class="avatar-preview-wrap">
+            <div id="settingsAvatarPreview" class="avatar-preview avatar-preview-xl" onclick="viewAvatar(this)">?</div>
           </div>
-          <div class="profile-hero-details">
-            <div class="profile-hero-name-row">
-              <div id="profileHeroName" class="profile-hero-name">—</div>
-              <span id="userRole" class="chip chip-blue"></span>
-            </div>
-            <button type="button" class="profile-edit-btn-inline" onclick="openEditProfileModal()">
-              <span data-i18n="Edit Profile">Edit Profile</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 6 15 12 9 18" />
-              </svg>
-            </button>
+          <div id="profileHeroName" class="profile-hero-name">—</div>
+          <div class="profile-hero-meta">
+            <span id="userRole" class="chip chip-blue"></span>
           </div>
+          <button type="button" class="btn btn-outline btn-sm profile-edit-btn" onclick="openEditProfileModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            <span data-i18n="Edit Profile">Edit Profile</span>
+          </button>
         </div>
 
-        <!-- Profile menu: clean, single-purpose entry points -->
-        <nav class="profile-menu-list" aria-label="Profile sections">
+        <!-- Section 1: Preferences -->
+        <div class="profile-section-title" data-i18n="Preferences">Preferences</div>
+        <nav class="profile-menu-list" aria-label="Preferences">
           <button type="button" class="profile-menu-item" onclick="openNotificationsModal()">
             <span class="profile-menu-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1052,7 +1045,7 @@
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </span>
-            <span class="profile-menu-label">Mentor Profile</span>
+            <span class="profile-menu-label" data-i18n="Mentor Profile">Mentor Profile</span>
             <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 6 15 12 9 18" />
@@ -1087,13 +1080,71 @@
             </span>
           </button>
         </nav>
+
+        <!-- Section 2: Support & Help -->
+        <div class="profile-section-title" data-i18n="Support & Help">Support & Help</div>
+        <nav class="profile-menu-list" aria-label="Support & Help">
+          <button type="button" class="profile-menu-item" onclick="navigate('support')">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="Support Requests">Support Requests</span>
+            <span id="profileSupportBadge" class="nav-badge" style="display:none;position:static;margin-right:6px">0</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
+
+          <button type="button" class="profile-menu-item" onclick="contactAdmin()">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="Contact Admin">Contact Admin</span>
+            <span class="profile-menu-trailing" style="color:var(--gold);font-weight:600">@YIDIDIYATAMIRUU</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
+
+          <button type="button" class="profile-menu-item" onclick="openFaqModal()">
+            <span class="profile-menu-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </span>
+            <span class="profile-menu-label" data-i18n="FAQ">FAQ</span>
+            <svg class="profile-menu-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </button>
+        </nav>
       </div>
     </div>
 
     <!-- ── Page: Support / My Tickets ────────────────────────────── -->
     <div id="page-support" class="page">
       <div class="app-header">
-        <h2 data-i18n="My Support Requests">My Support Requests</h2>
+        <div class="flex items-center gap-8">
+          <button class="btn btn-ghost btn-sm" onclick="navigate('settings')" aria-label="Back to profile">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <h2 data-i18n="My Support Requests" style="margin:0;font-size:1.15rem">My Support Requests</h2>
+        </div>
         <button class="btn btn-sm btn-primary" onclick="toggleNewTicketModal(true)" data-i18n="New Request">+ New
           Request</button>
       </div>
@@ -1196,14 +1247,6 @@
         <span id="chatBadge" class="nav-badge" style="display:none">0</span>
         <span data-i18n="Chat">Chat</span>
       </div>
-      <div id="nav-support" class="nav-item" onclick="navigate('support')" style="position:relative">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path
-            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-        </svg>
-        <span id="supportBadge" class="nav-badge" style="display:none">0</span>
-        <span data-i18n="Support">Support</span>
-      </div>
       <div id="nav-journal" class="nav-item" onclick="navigate('journal')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 20h9" />
@@ -1283,11 +1326,15 @@
           <input type="hidden" id="modalTicketCategory" value="" />
         </div>
       </div>
-      <div class="form-group mb-16">
+      <div class="form-group mb-12">
         <label class="form-label" data-i18n="Description">Description</label>
         <textarea id="modalTicketDesc" class="form-control" rows="4" placeholder="Describe your issue in detail..."
           data-i18n="ticket_desc_placeholder"></textarea>
       </div>
+
+      <p class="text-xs text-dim mb-12" style="text-align:center">
+        Or message admin on Telegram: <a href="javascript:void(0)" onclick="contactAdmin()" style="color:var(--gold);font-weight:600">@YIDIDIYATAMIRUU</a>
+      </p>
 
       <div class="flex gap-8 mt-12">
         <button class="btn btn-ghost flex-1" onclick="toggleNewTicketModal(false)"
@@ -1791,6 +1838,80 @@
 
       <button type="button" class="btn btn-primary btn-full" onclick="saveMentorProfileFromModal()"
         data-i18n="Save Changes">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- ── Modal: FAQ ────────────────────────────────────────────── -->
+  <div id="faqModal" class="modal-overlay" onclick="if(event.target===this)closeFaqModal()">
+    <div class="modal-sheet faq-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" data-i18n="FAQ">Frequently Asked Questions</div>
+      <p class="text-xs text-dim mb-16" data-i18n="faq_subtitle">Find quick answers to common questions about Holy Bot.</p>
+
+      <div class="faq-accordion-list">
+        <div class="faq-item" onclick="toggleFaqItem(this)">
+          <div class="faq-question">
+            <span data-i18n="faq_q1">What is Holy Bot?</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="faq-answer" data-i18n="faq_a1">
+            Holy Bot is a faith-centered Christian mentorship platform designed to provide anonymous support, biblical recovery, accountability, and 1-on-1 spiritual mentoring.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaqItem(this)">
+          <div class="faq-question">
+            <span data-i18n="faq_q2">Is my identity anonymous and safe?</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="faq-answer" data-i18n="faq_a2">
+            Yes, completely! Your real name, phone number, and Telegram identity are never exposed. You are only identified by your custom nickname or anonymous ID.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaqItem(this)">
+          <div class="faq-question">
+            <span data-i18n="faq_q3">How do I connect with a mentor?</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="faq-answer" data-i18n="faq_a3">
+            Visit the Mentors tab, review mentor bios and focus areas, and tap "Request". When a mentor accepts, you will be connected for 1-on-1 chats and scheduled audio sessions.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaqItem(this)">
+          <div class="faq-question">
+            <span data-i18n="faq_q4">How do scheduled sessions work?</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="faq-answer" data-i18n="faq_a4">
+            Mentors create 1-on-1 or group session slots. You will get a notification reminder before the scheduled time with an instant join button.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaqItem(this)">
+          <div class="faq-question">
+            <span data-i18n="faq_q5">How can I contact admin for support?</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="faq-answer" data-i18n="faq_a5">
+            Tap "Contact Admin" or message our admin directly on Telegram at @YIDIDIYATAMIRUU. You can also submit support requests directly in the app.
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-full mt-16" onclick="closeFaqModal()"
+        data-i18n="btn_close">Close</button>
     </div>
   </div>
 

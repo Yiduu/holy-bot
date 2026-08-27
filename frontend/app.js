@@ -5131,6 +5131,34 @@ async function saveMentorProfileFromModal() {
   if (ok) closeMentorProfileModal();
 }
 
+// ─── Contact Admin ────────────────────────────────────────────
+function contactAdmin() {
+  haptic('light');
+  const tgUsername = 'YIDIDIYATAMIRUU';
+  const url = `https://t.me/${tgUsername}`;
+  if (window.Telegram?.WebApp?.openTelegramLink) {
+    window.Telegram.WebApp.openTelegramLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+// ─── FAQ modal ────────────────────────────────────────────────
+function openFaqModal() {
+  haptic('light');
+  $('faqModal')?.classList.add('open');
+}
+
+function closeFaqModal() {
+  haptic('light');
+  $('faqModal')?.classList.remove('open');
+}
+
+function toggleFaqItem(el) {
+  haptic('selection');
+  if (el) el.classList.toggle('open');
+}
+
 async function toggleAcceptingRequests() {
   haptic('light');
   const el = $('toggleAcceptingRequests');
@@ -5302,26 +5330,30 @@ async function loadUserTickets() {
 }
 
 function updateSupportBadge(ticketsData) {
-  const badge = $('supportBadge');
-  if (!badge) return;
+  const badges = [$('supportBadge'), $('profileSupportBadge')].filter(Boolean);
+  if (!badges.length) return;
 
   if (Array.isArray(ticketsData)) {
     const activeCount = ticketsData.filter(t => t.status === 'open' || t.status === 'in_progress').length;
-    if (activeCount > 0) {
-      badge.textContent = activeCount;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
-    }
+    badges.forEach(b => {
+      if (activeCount > 0) {
+        b.textContent = activeCount;
+        b.style.display = 'inline-block';
+      } else {
+        b.style.display = 'none';
+      }
+    });
   } else {
     apiFetch('/api/support').then(tickets => {
       const activeCount = (tickets || []).filter(t => t.status === 'open' || t.status === 'in_progress').length;
-      if (activeCount > 0) {
-        badge.textContent = activeCount;
-        badge.style.display = 'inline-block';
-      } else {
-        badge.style.display = 'none';
-      }
+      badges.forEach(b => {
+        if (activeCount > 0) {
+          b.textContent = activeCount;
+          b.style.display = 'inline-block';
+        } else {
+          b.style.display = 'none';
+        }
+      });
     }).catch(() => { });
   }
 }

@@ -405,7 +405,23 @@ const I18N = {
     "Save Changes": "Save Changes",
     "Both": "Both",
     "Male only": "Male only",
-    "Female only": "Female only"
+    "Female only": "Female only",
+    "Preferences": "Preferences",
+    "Support & Help": "Support & Help",
+    "Support Requests": "Support Requests",
+    "Contact Admin": "Contact Admin",
+    "FAQ": "Frequently Asked Questions",
+    "faq_subtitle": "Find quick answers to common questions about Holy Bot.",
+    "faq_q1": "What is Holy Bot?",
+    "faq_a1": "Holy Bot is a faith-centered Christian mentorship platform designed to provide anonymous support, biblical recovery, accountability, and 1-on-1 spiritual mentoring.",
+    "faq_q2": "Is my identity anonymous and safe?",
+    "faq_a2": "Yes, completely! Your real name, phone number, and Telegram identity are never exposed. You are only identified by your custom nickname or anonymous ID.",
+    "faq_q3": "How do I connect with a mentor?",
+    "faq_a3": "Visit the Mentors tab, review mentor bios and focus areas, and tap 'Request'. When a mentor accepts, you will be connected for 1-on-1 chats and scheduled audio sessions.",
+    "faq_q4": "How do scheduled sessions work?",
+    "faq_a4": "Mentors create 1-on-1 or group session slots. You will get a notification reminder before the scheduled time with an instant join button.",
+    "faq_q5": "How can I contact admin for support?",
+    "faq_a5": "Tap 'Contact Admin' or message our admin directly on Telegram at @YIDIDIYATAMIRUU. You can also submit support requests directly in the app."
   },
   am: {
     "btn_find_mentor": "አማካሪ ፈልግ",
@@ -809,6 +825,22 @@ const I18N = {
     "Save Changes": "ለውጦችን አስቀምጥ",
     "Both": "ሁለቱም",
     "Male only": "ወንዶች ብቻ",
-    "Female only": "ሴቶች ብቻ"
+    "Female only": "ሴቶች ብቻ",
+    "Preferences": "ምርጫዎች",
+    "Support & Help": "ድጋፍ እና እርዳታ",
+    "Support Requests": "የድጋፍ ጥያቄዎች",
+    "Contact Admin": "አስተዳዳሪን አግኝ",
+    "FAQ": "ተደጋጋሚ ጥያቄዎች",
+    "faq_subtitle": "ስለ ሆሊ ቦት ለተደጋጋሚ ጥያቄዎች ፈጣን መልሶች ያግኙ።",
+    "faq_q1": "ሆሊ ቦት ምንድን ነው?",
+    "faq_a1": "ሆሊ ቦት አማኞች የግል ፈተናዎቻቸውን እንዲያሸንፉ፣ በመንፈሳዊ ንጽሕና እንዲያድጉ እና በክርስቲያናዊ ተጠያቂነት እንዲመላለሱ የተዘጋጀ የመንፈሳዊ ድጋፍና የማማከር መድረክ ነው።",
+    "faq_q2": "ማንነቴ በሚስጥር የተጠበቀ ነው?",
+    "faq_a2": "አዎ፣ ሙሉ በሙሉ በሚስጥር የተጠበቀ ነው። ስልክ ቁጥርዎ፣ ትክክለኛ ስምዎ ወይም የቴሌግራም አድራሻዎ ለአማካሪዎች ወይም ለሌሎች ተጠቃሚዎች ፈጽሞ አይጋራም። በሚመርጡት ቅጽል ስም ብቻ ይታወቃሉ።",
+    "faq_q3": "ከአማካሪ ጋር እንዴት መገናኘት እችላለሁ?",
+    "faq_a3": "ወደ አማካሪዎች ገጽ በመሄድ የአማካሪዎችን መገለጫ እና የልምድ መስክ ይመልከቱ፣ ከዚያም 'ጠይቅ' የሚለውን ይጫኑ። አማካሪው ጥያቄዎን ሲቀበል በቻት መነጋገር እና የቀጠሮ ክፍለ-ጊዜዎችን ማዘጋጀት ይችላሉ።",
+    "faq_q4": "የቀጠሮ ክፍለ-ጊዜዎች እንዴት ይሰራሉ?",
+    "faq_a4": "አማካሪዎች በሚስማሙበት ሰዓት የድምፅ ወይም የቪዲዮ ክፍለ-ጊዜዎችን ያዘጋጃሉ። ክፍለ-ጊዜው ከመጀመሩ በፊት የሚቀላቀሉበትን ማስፈንጠሪያ የያዘ ማሳወቂያ ይደርስዎታል።",
+    "faq_q5": "ከአስተዳዳሪ ጋር እንዴት መገናኘት እችላለሁ?",
+    "faq_a5": "በመገለጫዎ ውስጥ 'አስተዳዳሪን አግኝ' የሚለውን በመጫን ወይም በቀጥታ በቴሌግራም @YIDIDIYATAMIRUU ላይ መልእክት በመላክ ማግኘት ይችላሉ። እንዲሁም በውስጠ-መተግበሪያ የድጋፍ ጥያቄ መላክ ይችላሉ።"
   }
 };

@@ -658,40 +658,52 @@
           <span id="mentorsAvailableCount" class="mentors-count-badge"></span>
         </div>
 
-        <!-- Search Bar -->
-        <div class="mentor-search-wrap mb-12">
-          <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input id="mentorSearchInput" type="text" class="mentor-search-input" placeholder="Search mentors by name, bio, topic…" oninput="filterMentorsView()" autocomplete="off" />
-          <button class="btn-search-filter" onclick="focusOrToggleTopicChips()" aria-label="Filter topics" title="Filter by topic">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
+        <!-- Search & Filter Bar Row -->
+        <div class="mentor-search-row mb-12">
+          <div class="mentor-search-wrap">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
+            <input id="mentorSearchInput" type="text" class="mentor-search-input" placeholder="Search mentors by name, bio, topic…" oninput="handleMentorSearchInput(this.value)" autocomplete="off" />
+            <button id="mentorSearchClearBtn" class="search-clear-btn" onclick="clearMentorSearch()" style="display:none;" aria-label="Clear search">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+          <button id="mentorFilterBtn" class="btn-filter-trigger" onclick="openMentorFilterModal()" aria-label="Filter mentors" title="Filter mentors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <span id="mentorFilterActiveDot" class="filter-active-badge" style="display:none;"></span>
           </button>
         </div>
 
-        <!-- Horizontal Topic Chips -->
-        <div class="mentor-topic-scroll-container mb-12">
-          <div id="mentorTopicChips" class="topic-scroll">
-            <button class="topic-chip active" data-topic-id="" onclick="selectMentorTopicChip(this, '')">All</button>
+        <!-- Premium Main Topic Selection Dropdown -->
+        <div class="mentor-topic-dropdown-row mb-12">
+          <div class="premium-dropdown form-dropdown flex-1" data-dropdown id="mentorMainTopicDropdown">
+            <button type="button" class="premium-dropdown-btn" data-dropdown-toggle id="mentorMainTopicDropdownBtn">
+              <div class="flex items-center gap-8" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span class="dropdown-label" id="mentorMainTopicDropdownLabel" data-i18n="all_topics">All Topics</span>
+              </div>
+              <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div class="premium-dropdown-menu" data-dropdown-menu id="mentorMainTopicDropdownMenu" style="max-height:260px;overflow-y:auto;width:100%;">
+              <!-- Dynamic topics -->
+            </div>
           </div>
-          <div class="topic-scroll-fade"></div>
         </div>
 
-        <!-- Hidden select kept for backwards compatibility if needed -->
-        <select id="mentorTopicSelect" style="display:none" onchange="loadMentors()">
-          <option value="">All Topics</option>
-        </select>
+        <!-- Active Filter Badges Bar -->
+        <div id="mentorActiveFiltersBar" class="mentor-active-filters-bar mb-12" style="display:none;">
+          <div id="mentorActiveFilterTags" class="active-filter-tags"></div>
+          <button class="btn-clear-all-filters" onclick="resetAllMentorFilters()" data-i18n="btn_reset">Reset</button>
+        </div>
 
         <!-- Segmented Tabs: Browse vs Saved -->
         <div class="mentor-tabs-segmented mb-16">
@@ -1962,6 +1974,71 @@
         <button class="btn btn-outline btn-sm flex-1" onclick="closeCropModal()" data-i18n="Cancel">Cancel</button>
         <button class="btn btn-primary btn-sm flex-1" id="cropSaveBtn" onclick="confirmAvatarCrop()"
           data-i18n="Save Photo">Save Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Comprehensive Mentor Filter Modal ───────────────────── -->
+  <div id="mentorFilterModal" class="modal-overlay" onclick="if(event.target===this)closeMentorFilterModal()">
+    <div class="modal-sheet" style="max-width:440px;margin:0 auto;overflow:visible;">
+      <div class="modal-handle"></div>
+      <div class="flex items-center justify-between mb-16">
+        <div class="modal-title" style="margin:0;" data-i18n="filter_mentors_title">Filter Mentors</div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="closeMentorFilterModal()" style="padding:4px 8px;font-size:1.1rem;line-height:1;">✕</button>
+      </div>
+
+      <!-- Filter Section: Topic -->
+      <div class="filter-group mb-16">
+        <label class="form-label" data-i18n="settings_my_topics">Topic</label>
+        <div class="premium-dropdown form-dropdown" data-dropdown id="modalFilterTopicDropdown">
+          <button type="button" class="premium-dropdown-btn" data-dropdown-toggle id="modalFilterTopicDropdownBtn">
+            <span class="dropdown-label" id="modalFilterTopicDropdownLabel" data-i18n="all_topics">All Topics</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="premium-dropdown-menu" data-dropdown-menu id="modalFilterTopicDropdownMenu" style="max-height:220px;overflow-y:auto;width:100%;">
+            <!-- Populated dynamically with topics -->
+          </div>
+          <input type="hidden" id="modalFilterTopicSelectedId" value="" />
+        </div>
+      </div>
+
+      <!-- Filter Section: Gender / Sex -->
+      <div class="filter-group mb-16">
+        <label class="form-label" data-i18n="filter_sex_label">Gender</label>
+        <div class="filter-segmented-grid" id="modalFilterSexGrid">
+          <button type="button" class="filter-pill-btn active" data-value="" onclick="setFilterSex('')" data-i18n="filter_all">All</button>
+          <button type="button" class="filter-pill-btn" data-value="M" onclick="setFilterSex('M')" data-i18n="sex_male">Male</button>
+          <button type="button" class="filter-pill-btn" data-value="F" onclick="setFilterSex('F')" data-i18n="sex_female">Female</button>
+        </div>
+      </div>
+
+      <!-- Filter Section: Minimum Rating -->
+      <div class="filter-group mb-16">
+        <label class="form-label" data-i18n="filter_rating_label">Minimum Rating</label>
+        <div class="filter-segmented-grid" id="modalFilterRatingGrid">
+          <button type="button" class="filter-pill-btn active" data-value="0" onclick="setFilterRating(0)" data-i18n="filter_rating_any">Any</button>
+          <button type="button" class="filter-pill-btn" data-value="4.5" onclick="setFilterRating(4.5)">★ 4.5+</button>
+          <button type="button" class="filter-pill-btn" data-value="4.0" onclick="setFilterRating(4.0)">★ 4.0+</button>
+          <button type="button" class="filter-pill-btn" data-value="3.5" onclick="setFilterRating(3.5)">★ 3.5+</button>
+        </div>
+      </div>
+
+      <!-- Filter Section: Availability -->
+      <div class="filter-group mb-20">
+        <label class="form-label" data-i18n="filter_availability_label">Availability</label>
+        <div class="filter-segmented-grid" id="modalFilterAvailGrid">
+          <button type="button" class="filter-pill-btn active" data-value="" onclick="setFilterAvailability('')" data-i18n="filter_all">All</button>
+          <button type="button" class="filter-pill-btn" data-value="available" onclick="setFilterAvailability('available')" data-i18n="filter_spots_open_only">Spots Open</button>
+          <button type="button" class="filter-pill-btn" data-value="online" onclick="setFilterAvailability('online')" data-i18n="filter_online_only">Online</button>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex gap-8 mt-20">
+        <button type="button" class="btn btn-ghost flex-1" onclick="resetMentorFiltersInModal()" data-i18n="btn_reset">Reset</button>
+        <button type="button" class="btn btn-primary flex-1" onclick="applyMentorFiltersFromModal()" data-i18n="btn_apply_filters">Apply Filters</button>
       </div>
     </div>
   </div>

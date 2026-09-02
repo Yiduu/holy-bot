@@ -2725,8 +2725,19 @@ function updateSavedMentorsBadge() {
   }
 }
 
+// ─── Mentors Filter State & Controller ────────────────────────
+let mentorFilters = {
+  topic_id: '',
+  topic_name: '',
+  sex: '',         // '' (All), 'M' (Male), 'F' (Female)
+  min_rating: 0,   // 0 (Any), 4.5, 4.0, 3.5
+  availability: '',// '' (All), 'available' (Spots open), 'online' (Online now)
+  search: ''
+};
+let mentorModalTempFilters = { ...mentorFilters };
+let mentorTopicsCache = [];
+
 function setMentorTab(tab) {
-  haptic('light');
   mentorActiveTab = tab;
   const btnBrowse = $('mentorTabBrowse');
   const btnSaved = $('mentorTabSaved');
@@ -2735,27 +2746,249 @@ function setMentorTab(tab) {
   renderMentorsList();
 }
 
-function selectMentorTopicChip(btn, topicId) {
-  haptic('light');
-  mentorActiveTopicId = String(topicId || '');
-  const chips = $$('#mentorTopicChips .topic-chip');
-  chips.forEach(c => c.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  const select = $('mentorTopicSelect');
-  if (select) select.value = mentorActiveTopicId;
-  loadMentors();
-}
-
-function focusOrToggleTopicChips() {
-  const chipsContainer = $('mentorTopicChips');
-  if (chipsContainer) {
-    chipsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function handleMentorSearchInput(val) {
+  mentorFilters.search = (val || '').trim();
+  const clearBtn = $('mentorSearchClearBtn');
+  if (clearBtn) {
+    clearBtn.style.display = mentorFilters.search.length > 0 ? 'flex' : 'none';
   }
-  const input = $('mentorSearchInput');
-  if (input) input.focus();
+  renderMentorsList();
 }
 
-function filterMentorsView() {
+function clearMentorSearch() {
+  const input = $('mentorSearchInput');
+  if (input) input.value = '';
+  handleMentorSearchInput('');
+}
+
+function selectMentorMainTopic(topicId, topicName) {
+  haptic('selection');
+  mentorFilters.topic_id = String(topicId || '');
+  mentorFilters.topic_name = topicName || '';
+  mentorActiveTopicId = mentorFilters.topic_id;
+
+  const displayLabel = topicName || t('all_topics') || 'All Topics';
+
+  const labelEl = $('mentorMainTopicDropdownLabel');
+  if (labelEl) labelEl.textContent = displayLabel;
+
+  const modalLabelEl = $('modalFilterTopicDropdownLabel');
+  if (modalLabelEl) modalLabelEl.textContent = displayLabel;
+
+  const modalInput = $('modalFilterTopicSelectedId');
+  if (modalInput) modalInput.value = mentorFilters.topic_id;
+
+  // Sync selected styling on both dropdowns
+  ['mentorMainTopicDropdownMenu', 'modalFilterTopicDropdownMenu'].forEach(menuId => {
+    const menu = $(menuId);
+    if (menu) {
+      menu.querySelectorAll('.dropdown-item').forEach(btn => {
+        btn.classList.toggle('selected', String(btn.dataset.value || '') === String(mentorFilters.topic_id));
+      });
+    }
+  });
+
+  $('mentorMainTopicDropdown')?.removeAttribute('data-open');
+  $('modalFilterTopicDropdown')?.removeAttribute('data-open');
+
+  updateFilterActiveIndicators();
+  renderMentorsList();
+}
+
+function updateFilterActiveIndicators() {
+  const isTopicActive = !!mentorFilters.topic_id;
+  const isSexActive = !!mentorFilters.sex;
+  const isRatingActive = Number(mentorFilters.min_rating) > 0;
+  const isAvailActive = !!mentorFilters.availability;
+  const hasActiveFilters = isTopicActive || isSexActive || isRatingActive || isAvailActive;
+
+  // Filter button active badge
+  const dot = $('mentorFilterActiveDot');
+  const filterBtn = $('mentorFilterBtn');
+  if (dot) dot.style.display = hasActiveFilters ? 'block' : 'none';
+  if (filterBtn) filterBtn.classList.toggle('active', hasActiveFilters);
+
+  // Active filter tags bar
+  const tagsBar = $('mentorActiveFiltersBar');
+  const tagsContainer = $('mentorActiveFilterTags');
+  if (tagsBar && tagsContainer) {
+    if (!hasActiveFilters) {
+      tagsBar.style.display = 'none';
+      tagsContainer.innerHTML = '';
+      return;
+    }
+
+    tagsBar.style.display = 'flex';
+    let tagsHtml = '';
+
+    if (isTopicActive) {
+      tagsHtml += `
+        <span class="active-filter-tag-pill" onclick="removeMentorFilter('topic')">
+          <span>${escapeHtml(mentorFilters.topic_name || 'Topic')}</span>
+          <span class="pill-x">✕</span>
+        </span>`;
+    }
+    if (isSexActive) {
+      const sexName = mentorFilters.sex === 'M' ? (t('sex_male') || 'Male') : (t('sex_female') || 'Female');
+      tagsHtml += `
+        <span class="active-filter-tag-pill" onclick="removeMentorFilter('sex')">
+          <span>${sexName}</span>
+          <span class="pill-x">✕</span>
+        </span>`;
+    }
+    if (isRatingActive) {
+      tagsHtml += `
+        <span class="active-filter-tag-pill" onclick="removeMentorFilter('rating')">
+          <span>★ ${mentorFilters.min_rating}+</span>
+          <span class="pill-x">✕</span>
+        </span>`;
+    }
+    if (isAvailActive) {
+      const availName = mentorFilters.availability === 'available'
+        ? (t('filter_spots_open_only') || 'Spots Open')
+        : (t('filter_online_only') || 'Online');
+      tagsHtml += `
+        <span class="active-filter-tag-pill" onclick="removeMentorFilter('availability')">
+          <span>${availName}</span>
+          <span class="pill-x">✕</span>
+        </span>`;
+    }
+
+    tagsContainer.innerHTML = tagsHtml;
+  }
+}
+
+function removeMentorFilter(key) {
+  haptic('light');
+  if (key === 'topic') {
+    selectMentorMainTopic('', '');
+    return;
+  }
+  if (key === 'sex') mentorFilters.sex = '';
+  if (key === 'rating') mentorFilters.min_rating = 0;
+  if (key === 'availability') mentorFilters.availability = '';
+
+  updateFilterActiveIndicators();
+  renderMentorsList();
+}
+
+function resetAllMentorFilters() {
+  haptic('light');
+  mentorFilters.topic_id = '';
+  mentorFilters.topic_name = '';
+  mentorFilters.sex = '';
+  mentorFilters.min_rating = 0;
+  mentorFilters.availability = '';
+  mentorActiveTopicId = '';
+
+  const labelEl = $('mentorMainTopicDropdownLabel');
+  if (labelEl) labelEl.textContent = t('all_topics') || 'All Topics';
+
+  updateFilterActiveIndicators();
+  renderMentorsList();
+}
+
+// ─── Filter Modal Dialog ──────────────────────────────────────
+function openMentorFilterModal() {
+  haptic('light');
+  mentorModalTempFilters = { ...mentorFilters };
+
+  // Sync Topic in modal dropdown
+  const displayLabel = mentorModalTempFilters.topic_name || t('all_topics') || 'All Topics';
+  const modalLabelEl = $('modalFilterTopicDropdownLabel');
+  if (modalLabelEl) modalLabelEl.textContent = displayLabel;
+
+  const modalInput = $('modalFilterTopicSelectedId');
+  if (modalInput) modalInput.value = mentorModalTempFilters.topic_id || '';
+
+  // Sync Sex pills
+  $$('#modalFilterSexGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.value || '') === (mentorModalTempFilters.sex || ''));
+  });
+
+  // Sync Rating pills
+  $$('#modalFilterRatingGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', String(btn.dataset.value || '0') === String(mentorModalTempFilters.min_rating || 0));
+  });
+
+  // Sync Availability pills
+  $$('#modalFilterAvailGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.value || '') === (mentorModalTempFilters.availability || ''));
+  });
+
+  $('modalFilterTopicDropdown')?.removeAttribute('data-open');
+  $('mentorFilterModal')?.classList.add('open');
+}
+
+function closeMentorFilterModal() {
+  haptic('light');
+  $('modalFilterTopicDropdown')?.removeAttribute('data-open');
+  $('mentorFilterModal')?.classList.remove('open');
+}
+
+function setFilterSex(val) {
+  haptic('selection');
+  mentorModalTempFilters.sex = val || '';
+  $$('#modalFilterSexGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.value || '') === (mentorModalTempFilters.sex || ''));
+  });
+}
+
+function setFilterRating(val) {
+  haptic('selection');
+  mentorModalTempFilters.min_rating = Number(val) || 0;
+  $$('#modalFilterRatingGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', String(btn.dataset.value || '0') === String(mentorModalTempFilters.min_rating));
+  });
+}
+
+function setFilterAvailability(val) {
+  haptic('selection');
+  mentorModalTempFilters.availability = val || '';
+  $$('#modalFilterAvailGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.value || '') === (mentorModalTempFilters.availability || ''));
+  });
+}
+
+function resetMentorFiltersInModal() {
+  haptic('light');
+  mentorModalTempFilters = {
+    topic_id: '',
+    topic_name: '',
+    sex: '',
+    min_rating: 0,
+    availability: '',
+    search: mentorFilters.search
+  };
+
+  const modalLabelEl = $('modalFilterTopicDropdownLabel');
+  if (modalLabelEl) modalLabelEl.textContent = t('all_topics') || 'All Topics';
+
+  const modalInput = $('modalFilterTopicSelectedId');
+  if (modalInput) modalInput.value = '';
+
+  $$('#modalFilterSexGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', !btn.dataset.value);
+  });
+  $$('#modalFilterRatingGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.value === '0');
+  });
+  $$('#modalFilterAvailGrid .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', !btn.dataset.value);
+  });
+}
+
+function applyMentorFiltersFromModal() {
+  haptic('medium');
+  mentorFilters = { ...mentorModalTempFilters };
+  mentorActiveTopicId = mentorFilters.topic_id;
+
+  const displayLabel = mentorFilters.topic_name || t('all_topics') || 'All Topics';
+  const labelEl = $('mentorMainTopicDropdownLabel');
+  if (labelEl) labelEl.textContent = displayLabel;
+
+  closeMentorFilterModal();
+  updateFilterActiveIndicators();
   renderMentorsList();
 }
 
@@ -2833,12 +3066,9 @@ function renderModernRating(rating, count) {
 // Small stroke-style hourglass icon for the Pending button state.
 const MENTOR_ICON_PENDING = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M6 3h12M6 21h12M6 3c0 5 4 6 6 9-2 3-6 4-6 9M18 3c0 5-4 6-6 9 2 3 6 4 6 9"/></svg>';
 
-// ─── Mentors ──────────────────────────────────────────────────
+// ─── Mentors Loader ───────────────────────────────────────────
 async function loadMentors() {
   const container = $('mentorsList');
-  const activeContainer = $('activeMentorContainer');
-  const filterSelect = $('mentorTopicSelect');
-  const selectedTopic = mentorActiveTopicId || (filterSelect ? filterSelect.value : '');
 
   if (container) {
     container.innerHTML = window.skeletonHTML ? skeletonHTML(3) : '<div class="loading-spinner" style="margin:40px auto"></div>';
@@ -2848,85 +3078,54 @@ async function loadMentors() {
 
   try {
     // 1. Fetch active mentor for the user (if any)
-    hasActiveMentorState = false;
-    if (activeContainer) activeContainer.innerHTML = '';
+    const activeMentorRes = await apiFetch('/api/users/active-mentor');
+    const activeMentorContainer = $('activeMentorContainer');
+    if (activeMentorContainer) {
+      if (activeMentorRes && activeMentorRes.mentor) {
+        const am = activeMentorRes.mentor;
+        const amName = am.user_settings?.display_name || am.anonymous_id;
+        const amBio = am.user_settings?.bio || "Your assigned mentor.";
+        const amLetter = amName.charAt(0).toUpperCase();
+        const amRating = am.rating || null;
+        const amReviews = am.rating_count || 0;
+        const haloHtml = renderHaloAvatar(am, amLetter, !!am.is_online, 1, true);
 
-    if (currentUser?.role === 'user') {
-      try {
-        const activeAssignment = await apiFetch('/api/users/my-mentor');
-        if (activeAssignment && activeAssignment.mentor) {
-          hasActiveMentorState = true;
-          const m = activeAssignment.mentor;
-          const name = m.user_settings?.display_name || m.anonymous_id;
-          const bio = m.user_settings?.bio || "Whatever you're carrying, you don't have to carry it alone. I'm here to encourage you with the hope found in Christ.";
-          const letter = name.charAt(0).toUpperCase();
-          const sexLabel = m.sex === 'M' ? t('sex_male') : m.sex === 'F' ? t('sex_female') : '';
-          const ageLabel = m.age_range || '';
-          const spec = m.user_settings?.specialization || '';
-          const rating = m.rating || null;
-          const reviews = m.rating_count || 0;
-
-          const haloHtml = renderHaloAvatar(m, letter, true, 0.7);
-
-          const specTag = spec ? `<span class="mentor-tag-chip spec-chip">${escapeHtml(spec)}</span>` : '';
-
-          if (activeContainer) {
-            activeContainer.innerHTML = `
-              <div class="active-mentor-luxury-card">
-                <div class="active-mentor-top-eyebrow">
-                  <span class="active-mentor-label">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    ${t('your_active_mentor') || 'Your Active Mentor'}
-                  </span>
-                  <span class="active-mentor-status-pill">
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                    ${t('active_mentorship_label') || 'Active Mentorship'}
-                  </span>
+        activeMentorContainer.innerHTML = `
+          <div class="active-mentor-banner">
+            <div class="active-mentor-header">
+              <span class="active-mentor-tag" data-i18n="your_active_mentor">${t('your_active_mentor') || 'Your Active Mentor'}</span>
+            </div>
+            <div class="mentor-card-top" style="margin-top:8px">
+              ${haloHtml}
+              <div class="mentor-card-main">
+                <div class="mentor-name-wrap">
+                  <span class="mentor-name">${escapeHtml(amName)}</span>
+                  <svg class="verified-shield" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
                 </div>
-                <div class="mentor-card-top">
-                  ${haloHtml}
-                  <div class="mentor-card-main">
-                    <div class="mentor-card-name-row">
-                      <div class="mentor-name-wrap">
-                        <span class="mentor-name">${escapeHtml(name)}</span>
-                        <svg class="verified-shield" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                      </div>
-                    </div>
-                    ${renderModernRating(rating, reviews)}
-                    <div class="mentor-demographics-row">
-                      ${sexLabel ? `<span class="mentor-pill-demographic">${escapeHtml(sexLabel)}</span>` : ''}
-                      ${ageLabel ? `<span class="mentor-pill-demographic">${escapeHtml(ageLabel)}</span>` : ''}
-                    </div>
-                  </div>
-                </div>
-                ${specTag ? `<div class="mentor-tags-full-row">${specTag}</div>` : ''}
-                <div class="mentor-bio-wrap">
-                  <p class="mentor-bio-text" id="bio-active-${m.telegram_id}">${escapeHtml(bio)}</p>
-                  ${bio.length > 90 ? `<button class="btn-bio-toggle" onclick="toggleBioExpand('active-${m.telegram_id}')" data-i18n-more="${t('btn_more') || 'More'}" data-i18n-less="${t('btn_less') || 'Less'}">${t('btn_more') || 'More'}</button>` : ''}
-                </div>
-                <div class="mentor-card-bottom" style="margin-top:8px">
-                  <div style="display:flex;gap:8px;width:100%">
-                    <button class="btn btn-outline btn-sm flex-1" onclick="openChat('${m.telegram_id}')" style="display:flex;align-items:center;justify-content:center;gap:6px">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      <span>${t('btn_message') || 'Message'}</span>
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="endMentorship()">${t('btn_end') || 'End Mentorship'}</button>
-                  </div>
-                </div>
-              </div>`;
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching active mentor:', err);
+                ${renderModernRating(amRating, amReviews)}
+              </div>
+            </div>
+            <div class="mentor-bio-wrap" style="margin-top:8px">
+              <p class="mentor-bio-text">${escapeHtml(amBio)}</p>
+            </div>
+            <div class="flex gap-8 mt-12">
+              <button class="btn btn-primary btn-sm flex-1" onclick="openChat('${am.telegram_id}')">
+                <span>${t('btn_message') || 'Message'}</span>
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="endMentorship()" style="color:var(--danger)">
+                <span>${t('btn_end') || 'End'}</span>
+              </button>
+            </div>
+          </div>`;
+        activeMentorContainer.style.display = 'block';
+      } else {
+        activeMentorContainer.innerHTML = '';
+        activeMentorContainer.style.display = 'none';
       }
     }
 
-    // 2. Fetch mentors from API, optionally filtered by topic_id
-    let url = '/api/mentors';
-    if (selectedTopic && selectedTopic !== '') {
-      url += `?topic_id=${encodeURIComponent(selectedTopic)}`;
-    }
-    mentorsCache = await apiFetch(url) || [];
+    // 2. Fetch all mentors from API
+    mentorsCache = await apiFetch('/api/mentors') || [];
     renderMentorsList();
   } catch (e) {
     if (container) container.innerHTML = `<div class="empty-state"><span>${escapeHtml(e.message)}</span></div>`;
@@ -2938,17 +3137,53 @@ function renderMentorsList() {
   if (!container) return;
 
   const countBadge = $('mentorsAvailableCount');
-  const query = ($('mentorSearchInput')?.value || '').trim().toLowerCase();
-  const selectedTopic = mentorActiveTopicId;
+  const query = (mentorFilters.search || '').trim().toLowerCase();
+  const selectedTopic = mentorFilters.topic_id;
+  const selectedSex = mentorFilters.sex;
+  const minRating = Number(mentorFilters.min_rating) || 0;
+  const availability = mentorFilters.availability;
 
-  // Filter mentors based on query, active tab, and topic
-  const filtered = mentorsCache.filter(m => {
-    const name = (m.user_settings?.display_name || m.anonymous_id || '').toLowerCase();
-    const bio = (m.user_settings?.bio || '').toLowerCase();
-    const spec = (m.user_settings?.specialization || '').toLowerCase();
-    const topics = (m.expertise_topics || []).join(' ').toLowerCase();
-    const matchesQuery = !query || name.includes(query) || bio.includes(query) || spec.includes(query) || topics.includes(query);
-    return matchesQuery;
+  // Filter mentors based on all filter parameters
+  const filtered = (mentorsCache || []).filter(m => {
+    // Search query filter
+    if (query) {
+      const name = (m.user_settings?.display_name || m.anonymous_id || '').toLowerCase();
+      const bio = (m.user_settings?.bio || '').toLowerCase();
+      const spec = (m.user_settings?.specialization || '').toLowerCase();
+      const topics = (m.expertise_topics || []).join(' ').toLowerCase();
+      const matchesQuery = name.includes(query) || bio.includes(query) || spec.includes(query) || topics.includes(query);
+      if (!matchesQuery) return false;
+    }
+
+    // Topic filter
+    if (selectedTopic) {
+      const topicMatches = (m.topics || []).some(t => String(t.id) === String(selectedTopic)) ||
+                           (m.topic_ids || []).map(String).includes(String(selectedTopic));
+      if (!topicMatches) return false;
+    }
+
+    // Sex / Gender filter
+    if (selectedSex) {
+      if (m.sex !== selectedSex) return false;
+    }
+
+    // Minimum Rating filter
+    if (minRating > 0) {
+      const rating = Number(m.rating) || 0;
+      if (rating < minRating) return false;
+    }
+
+    // Availability filter
+    if (availability === 'available') {
+      const mentees = m.mentee_count || 0;
+      const max = m.user_settings?.max_mentees || 5;
+      const isAccepting = m.accepting_requests !== false;
+      if (!isAccepting || mentees >= max) return false;
+    } else if (availability === 'online') {
+      if (!m.is_online) return false;
+    }
+
+    return true;
   });
 
   const listToShow = mentorActiveTab === 'saved'
@@ -2975,13 +3210,15 @@ function renderMentorsList() {
           </p>
         </div>`;
     } else {
-      let message = 'No mentors available';
+      let message = 'No mentors found with active filters';
       if (query) {
         message = `No mentors matching "${escapeHtml(query)}"`;
-      } else if (selectedTopic) {
-        message = `No mentors available for this topic`;
       }
-      container.innerHTML = `<div class="empty-state"><span>${message}</span></div>`;
+      container.innerHTML = `
+        <div class="empty-state" style="padding:40px 16px;text-align:center;">
+          <p style="color:var(--text2);margin-bottom:12px;">${escapeHtml(message)}</p>
+          <button class="btn btn-outline btn-sm" onclick="resetAllMentorFilters()">${t('btn_reset') || 'Reset Filters'}</button>
+        </div>`;
     }
     return;
   }
@@ -3007,7 +3244,6 @@ function renderMentorsList() {
     const reviews = m.rating_count || 0;
 
     const haloHtml = renderHaloAvatar(m, letter, isOnline, isAccepting ? pct : 1, isAccepting);
-    const topicIdParam = selectedTopic && selectedTopic !== '' ? `, ${selectedTopic}` : '';
 
     let spotsLabel = '';
     let spotsClass = '';
@@ -3051,7 +3287,7 @@ function renderMentorsList() {
         </button>`;
     } else if (!isAccepting) {
       actionBtnHtml = `
-        <button class="btn btn-outline btn-sm btn-not-accepting" disabled title="${t('not_accepting_tooltip') || 'This mentor is currently not accepting new mentees.'}">
+        <button class="btn btn-outline btn-sm btn-not-accepting" disabled title="${t('not_accepting_tooltip')}">
           ${t('not_accepting') || 'Paused'}
         </button>`;
     } else if (isFull) {
@@ -3060,7 +3296,6 @@ function renderMentorsList() {
           ${t('capacity_full') || 'Full'}
         </button>`;
     } else {
-      // Clean and safe handler: looks up mentor from cache and routes directly or via topic picker
       actionBtnHtml = `
         <button class="btn btn-primary btn-sm btn-mentor-request" data-mentor-name="${escapeHtml(name)}"
           onclick="handleMentorRequestClick(event, '${m.telegram_id}')" ${!canRequest ? 'disabled' : ''}>
@@ -3094,7 +3329,7 @@ function renderMentorsList() {
           </div>
         </div>
 
-        <!-- Full-width Specialization & Topic Tags row: Starts from the very left edge under avatar! -->
+        <!-- Full-width Specialization & Topic Tags row -->
         ${allTagsRow}
 
         <!-- Full-width Bio with "More / Less" toggle button -->
@@ -3123,27 +3358,63 @@ function renderMentorsList() {
 
 async function loadMentorTopics() {
   try {
-    const topics = await apiFetch('/api/topics') || [];
-    const select = $('mentorTopicSelect');
-    const container = $('mentorTopicChips');
-    if (select) {
-      select.innerHTML = '<option value="">All Topics</option>' +
-        topics.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-    }
-    if (container) {
-      container.innerHTML = `
-        <button class="topic-chip ${!mentorActiveTopicId ? 'active' : ''}" data-topic-id="" onclick="selectMentorTopicChip(this, '')">
-          ${t('all_topics') || 'All'}
-        </button>` +
-        topics.map(t => `
-          <button class="topic-chip ${String(mentorActiveTopicId) === String(t.id) ? 'active' : ''}" data-topic-id="${t.id}" onclick="selectMentorTopicChip(this, '${t.id}')">
-            ${escapeHtml(t.name)}
+    mentorTopicsCache = await apiFetch('/api/topics') || [];
+    const allText = t('all_topics') || 'All Topics';
+
+    // 1. Populate Main Topic Dropdown Menu
+    const mainMenu = $('mentorMainTopicDropdownMenu');
+    if (mainMenu) {
+      mainMenu.innerHTML = `
+        <button type="button" class="dropdown-item ${!mentorFilters.topic_id ? 'selected' : ''}" data-value="" onclick="selectMentorMainTopic('', '')">
+          <span>${allText}</span>
+        </button>
+        ${mentorTopicsCache.map(tp => `
+          <button type="button" class="dropdown-item ${String(mentorFilters.topic_id) === String(tp.id) ? 'selected' : ''}" data-value="${tp.id}" onclick="selectMentorMainTopic(${tp.id}, \`${escapeHtml(tp.name)}\`)">
+            <span>${escapeHtml(tp.name)}</span>
           </button>
-        `).join('');
+        `).join('')}
+      `;
+    }
+
+    // 2. Populate Modal Filter Topic Dropdown Menu
+    const modalMenu = $('modalFilterTopicDropdownMenu');
+    if (modalMenu) {
+      modalMenu.innerHTML = `
+        <button type="button" class="dropdown-item ${!mentorModalTempFilters.topic_id ? 'selected' : ''}" data-value="" onclick="selectMentorModalTopic('', '')">
+          <span>${allText}</span>
+        </button>
+        ${mentorTopicsCache.map(tp => `
+          <button type="button" class="dropdown-item ${String(mentorModalTempFilters.topic_id) === String(tp.id) ? 'selected' : ''}" data-value="${tp.id}" onclick="selectMentorModalTopic(${tp.id}, \`${escapeHtml(tp.name)}\`)">
+            <span>${escapeHtml(tp.name)}</span>
+          </button>
+        `).join('')}
+      `;
     }
   } catch (e) {
     console.error('Failed to load topics for filter:', e);
   }
+}
+
+function selectMentorModalTopic(topicId, topicName) {
+  haptic('selection');
+  mentorModalTempFilters.topic_id = String(topicId || '');
+  mentorModalTempFilters.topic_name = topicName || '';
+
+  const displayLabel = topicName || t('all_topics') || 'All Topics';
+  const modalLabelEl = $('modalFilterTopicDropdownLabel');
+  if (modalLabelEl) modalLabelEl.textContent = displayLabel;
+
+  const modalInput = $('modalFilterTopicSelectedId');
+  if (modalInput) modalInput.value = mentorModalTempFilters.topic_id;
+
+  const modalMenu = $('modalFilterTopicDropdownMenu');
+  if (modalMenu) {
+    modalMenu.querySelectorAll('.dropdown-item').forEach(btn => {
+      btn.classList.toggle('selected', String(btn.dataset.value || '') === String(mentorModalTempFilters.topic_id));
+    });
+  }
+
+  $('modalFilterTopicDropdown')?.removeAttribute('data-open');
 }
 
 // ─── Mentorship Request with Premium Topic Picker Modal ─────────

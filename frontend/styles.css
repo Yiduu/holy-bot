@@ -11,6 +11,8 @@
   --gold: #C9A84C;
   --gold-light: #E8C96B;
   --gold-dim: rgba(201, 168, 76, 0.25);
+  --espresso: #20180a;
+  --espresso-2: #2E2210;
 
   --bg: #0D0F14;
   --bg2: #141720;
@@ -7589,76 +7591,6 @@ textarea.form-control {
   margin-top: 0;
 }
 
-/* ─── Streak card: flame icon + number glow ─────────────────── */
-.streak-icon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.streak-flame {
-  transform-origin: 50% 85%;
-  animation: flameFlicker 2.6s ease-in-out infinite;
-}
-
-@keyframes flameFlicker {
-
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
-
-  25% {
-    transform: scale(1.05) rotate(-1.5deg);
-  }
-
-  50% {
-    transform: scale(0.97) rotate(1deg);
-  }
-
-  75% {
-    transform: scale(1.03) rotate(-0.5deg);
-  }
-}
-
-.streak-hero-main {
-  position: relative;
-}
-
-.streak-glow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 120px;
-  height: 120px;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(201, 168, 76, 0.28), transparent 70%);
-  filter: blur(6px);
-  animation: glowPulse 3.4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes glowPulse {
-
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: translate(-50%, -50%) scale(0.94);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
-  }
-}
-
-.streak-hero-number,
-.streak-hero-unit {
-  position: relative;
-  z-index: 1;
-}
-
 /* ─── Mood faces (journal picker + journal list) ────────────── */
 .mood-option .mood-svg {
   color: var(--text2);
@@ -7674,6 +7606,147 @@ textarea.form-control {
   color: var(--gold);
 }
 
+/* ─── Streak card: Gold foil hero card ─────────────────────────
+   Foil surface: gold-to-champagne gradient with subtle fractal
+   noise grain for a brushed-metal finish, diagonal sheen sweep,
+   and espresso embossed typography. */
+.streak-card-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 24px 20px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(32, 24, 10, 0.25);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"),
+    linear-gradient(155deg, #F5DFA0 0%, var(--gold-light) 28%, var(--gold) 62%, #A87C2A 100%);
+}
+
+/* Diagonal sheen sweep — foil catching light */
+.streak-card-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .streak-card-hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  }
+}
+
+.streak-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 99px;
+  background: rgba(32, 24, 10, 0.14);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--espresso);
+  position: relative;
+  z-index: 1;
+}
+
+.streak-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.streak-flame {
+  transform-origin: 50% 85%;
+  animation: flameFlicker 2.6s ease-in-out infinite;
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.05) rotate(-1.5deg); }
+  50% { transform: scale(0.97) rotate(1deg); }
+  75% { transform: scale(1.03) rotate(-0.5deg); }
+}
+
+.streak-hero-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.streak-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.25), transparent 70%);
+  filter: blur(6px);
+  animation: glowPulse 3.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+/* Solid espresso pressed-into-metal typography */
+.streak-hero-number {
+  font-family: var(--font-display);
+  font-size: 4.2rem;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--espresso);
+  letter-spacing: -0.02em;
+  text-shadow: 0 1.5px 0 rgba(255, 255, 255, 0.35);
+  position: relative;
+  z-index: 1;
+}
+
+.streak-hero-unit {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--espresso-2);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  position: relative;
+  z-index: 1;
+}
+
+.streak-hero-sub {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(32, 24, 10, 0.65);
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+
 /* ─── Streak card: freeze badge ─────────────────────────────── */
 .streak-freeze-badge {
   display: inline-flex;
@@ -7682,8 +7755,8 @@ textarea.form-control {
   margin-left: 2px;
   padding: 2px 7px 2px 6px;
   border-radius: 999px;
-  background: rgba(96, 179, 224, 0.14);
-  color: #6BB8E0;
+  background: rgba(32, 24, 10, 0.2);
+  color: var(--espresso);
   font-family: var(--font-body, inherit);
   font-size: 0.68rem;
   font-weight: 700;
@@ -7697,12 +7770,12 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* ─── Streak card: personal-best badge (replaces plain sub-label) ── */
+/* ─── Streak card: personal-best badge ──────────────────────── */
 .streak-best-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--gold-light);
+  color: var(--espresso);
   font-weight: 700;
 }
 
@@ -7710,14 +7783,16 @@ textarea.form-control {
   flex-shrink: 0;
 }
 
-/* ─── Streak card: weekly progress strip (Premium Day Circles) ── */
+/* ─── Streak card: weekly progress strip ────────────────────── */
 .streak-week {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 9px;
   margin: 4px 0 20px;
   width: 100%;
   max-width: 340px;
+  position: relative;
+  z-index: 1;
 }
 
 .streak-week-item {
@@ -7729,72 +7804,74 @@ textarea.form-control {
 }
 
 .streak-week-dot {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid rgba(201, 168, 76, 0.22);
+  border: 1.5px solid rgba(32, 24, 10, 0.2);
+  background: rgba(32, 24, 10, 0.08);
   color: transparent;
-  background: rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
   transition: all 0.25s var(--ease-spring);
   position: relative;
 }
 
-[data-theme="light"] .streak-week-dot {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(184, 134, 11, 0.25);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
 .streak-week-dot.is-read {
-  background: linear-gradient(135deg, #FFEAA0 0%, #E2B94A 45%, #9E7920 100%);
-  border-color: rgba(255, 240, 180, 0.6);
-  color: #241A04;
-  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.85);
-  transform: scale(1.04);
-}
-
-.streak-week-dot.is-read svg {
-  stroke-width: 3;
-  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.4));
+  background: var(--espresso);
+  border-color: var(--espresso);
+  color: var(--gold-light);
 }
 
 .streak-week-dot.is-frozen {
-  background: linear-gradient(135deg, #CEEEFD 0%, #63B3ED 50%, #2B6CB0 100%);
-  border-color: rgba(190, 235, 255, 0.6);
-  color: #062338;
-  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  background: #1B3A4B;
+  border-color: #1B3A4B;
+  color: #63B3ED;
 }
 
 .streak-week-dot.is-today {
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold), 0 0 14px rgba(201, 168, 76, 0.5);
-  transform: scale(1.1);
-  animation: todayDotPulse 2.2s ease-in-out infinite;
-}
-
-@keyframes todayDotPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold), 0 0 10px rgba(201, 168, 76, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--gold-light), 0 0 18px rgba(201, 168, 76, 0.75);
-  }
+  box-shadow: 0 0 0 2px #F5DFA0, 0 0 0 3.5px var(--espresso);
 }
 
 .streak-week-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  color: var(--text2);
+  color: rgba(32, 24, 10, 0.5);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
 }
 
 .streak-week-dot.is-read + .streak-week-label,
 .streak-week-dot.is-today + .streak-week-label {
-  color: var(--gold);
+  color: var(--espresso);
+}
+
+/* ─── Streak card button: Inverted dark fill on foil ────────── */
+.streak-hero-btn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 270px;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--gold-light);
+  background: linear-gradient(135deg, var(--espresso-2), var(--espresso));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.streak-hero-btn:active {
+  transform: scale(0.98);
+}
+
+.streak-card.is-done-today .streak-hero-btn {
+  opacity: 0.75;
+  background: var(--espresso-2);
 }
 
 /* ─── Streak Celebration Animation ──────────────────────────── */
@@ -7849,17 +7926,19 @@ textarea.form-control {
   margin-top: 10px;
   padding: 9px 12px;
   border-radius: 12px;
-  background: rgba(var(--bg-rgb), 0.5);
-  border: 1px dashed var(--border);
-  color: var(--text2);
+  background: rgba(32, 24, 10, 0.12);
+  border: 1px dashed rgba(32, 24, 10, 0.3);
+  color: var(--espresso-2);
   font-size: 0.74rem;
   line-height: 1.3;
   text-align: left;
+  position: relative;
+  z-index: 1;
 }
 
 .streak-reminder-nudge svg {
   flex-shrink: 0;
-  color: var(--gold-light);
+  color: var(--espresso);
 }
 
 .streak-reminder-nudge span {
@@ -7869,7 +7948,7 @@ textarea.form-control {
 .streak-reminder-btn {
   flex-shrink: 0;
   border: none;
-  background: var(--gold-dim);
+  background: var(--espresso);
   color: var(--gold-light);
   font-size: 0.72rem;
   font-weight: 700;
@@ -7880,8 +7959,8 @@ textarea.form-control {
 }
 
 .streak-reminder-btn:hover {
-  background: var(--gold);
-  color: #1a1607;
+  background: var(--espresso-2);
+  color: #fff;
 }
 
 .streak-reminder-btn:active {

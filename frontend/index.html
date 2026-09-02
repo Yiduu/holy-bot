@@ -1966,6 +1966,43 @@
     </div>
   </div>
 
+  <!-- ─── Mentorship Request Topic Picker Modal ──────────────── -->
+  <!-- ─── Request Topic Picker Modal ──────────────────────────── -->
+  <div id="requestTopicModal" class="modal-overlay" onclick="if(event.target===this)closeRequestTopicModal()">
+    <div class="modal-sheet req-topic-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- Header: gold icon + question -->
+      <div class="req-topic-header">
+        <div class="req-topic-header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 0 1 7 7c0 3-1.8 5.6-4.5 6.7V17a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-1.3C6.8 14.6 5 12 5 9a7 7 0 0 1 7-7z"/>
+            <path d="M9 21h6"/><path d="M10 17v1"/><path d="M14 17v1"/>
+          </svg>
+        </div>
+        <h3 class="req-topic-question" data-i18n="select_topic_title">Which topic?</h3>
+        <p id="requestTopicSubtitle" class="req-topic-sub" data-i18n="select_topic_sub">Choose the area you want to focus on with this mentor.</p>
+      </div>
+
+      <!-- Divider -->
+      <div class="req-topic-divider"></div>
+
+      <!-- Scrollable topic list -->
+      <div id="requestTopicList" class="request-topic-list">
+        <!-- Dynamically rendered selectable topic options -->
+      </div>
+
+      <!-- Action bar -->
+      <div class="req-topic-actions">
+        <button type="button" class="btn btn-ghost req-topic-cancel" onclick="closeRequestTopicModal()" data-i18n="btn_cancel">Cancel</button>
+        <button type="button" id="confirmRequestTopicBtn" class="btn btn-primary req-topic-confirm" onclick="confirmMentorshipRequestWithTopic()" data-i18n="btn_done" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span data-i18n="btn_done">Request Mentorship</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ─── Topic Selection Modal ────────────────────────────────── -->
   <div id="topicModal" class="modal-overlay" onclick="if(event.target===this)closeTopicModal()">
     <div class="modal-sheet">

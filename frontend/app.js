@@ -3060,9 +3060,14 @@ function renderMentorsList() {
           ${t('capacity_full') || 'Full'}
         </button>`;
     } else {
+      // When a topic chip is active (user is browsing a specific topic), send directly.
+      // When viewing "All Topics", show the topic picker so the user consciously selects.
+      const onclickFn = topicIdParam
+        ? `requestMentorship(event, ${m.telegram_id}${topicIdParam})`
+        : `openRequestTopicModal(event, ${m.telegram_id}, ${JSON.stringify(m.topics || [])}, '${escapeHtml(name).replace(/'/g, '\\&#39;')}' )`;
       actionBtnHtml = `
         <button class="btn btn-primary btn-sm btn-mentor-request" data-mentor-name="${escapeHtml(name)}"
-          onclick="requestMentorship(event, ${m.telegram_id}${topicIdParam})" ${!canRequest ? 'disabled' : ''}>
+          onclick="${onclickFn}" ${!canRequest ? 'disabled' : ''}>
           <span>${t('btn_request')}</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>`;
@@ -3142,6 +3147,125 @@ async function loadMentorTopics() {
     }
   } catch (e) {
     console.error('Failed to load topics for filter:', e);
+  }
+}
+
+// ─── Topic Picker Modal (All Topics → specific topic) ───────────
+// State for the in-flight request from the topic picker
+let _rtMentorId = null;
+let _rtMentorName = '';
+let _rtSelectedTopicId = null;
+let _rtSourceBtn = null;
+let _rtSourceBtnHtml = '';
+
+/**
+ * Opens the topic picker when the user taps Request from the "All Topics" view.
+ * Shows the mentor's topic list as radio-style option cards.
+ */
+function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
+  haptic('light');
+  _rtMentorId = mentorId;
+  _rtMentorName = mentorName || '';
+  _rtSelectedTopicId = null;
+  _rtSourceBtn = event?.currentTarget || null;
+  _rtSourceBtnHtml = _rtSourceBtn ? _rtSourceBtn.innerHTML : '';
+
+  // Update subtitle — show mentor name in a gold highlight
+  const subtitle = $('requestTopicSubtitle');
+  if (subtitle) {
+    const raw = t('select_topic_sub') || 'Choose the area you want to focus on with {name}.';
+    subtitle.innerHTML = raw.replace('{name}', `<strong style="color:var(--gold);font-weight:700">${escapeHtml(mentorName)}</strong>`);
+  }
+
+  // Build topic list
+  const list = $('requestTopicList');
+  if (list) {
+    if (!mentorTopics || mentorTopics.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span>${t('no_topics_found') || 'No topics available'}</span></div>`;
+    } else {
+      list.innerHTML = mentorTopics.map(tp => `
+        <div class="request-topic-option" data-topic-id="${tp.id}" onclick="selectRequestTopic(${tp.id}, this)">
+          <div class="request-topic-radio"><div class="request-topic-radio-dot"></div></div>
+          <span class="request-topic-name">${escapeHtml(tp.name)}</span>
+          <div class="request-topic-check">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // Disable OK until a selection is made
+  const confirmBtn = $('confirmRequestTopicBtn');
+  if (confirmBtn) confirmBtn.disabled = true;
+
+  $('requestTopicModal')?.classList.add('open');
+}
+
+function selectRequestTopic(topicId, el) {
+  haptic('light');
+  _rtSelectedTopicId = topicId;
+  // Clear all selections
+  document.querySelectorAll('#requestTopicList .request-topic-option').forEach(opt => opt.classList.remove('selected'));
+  // Mark this one
+  el?.classList.add('selected');
+  // Enable the OK button
+  const confirmBtn = $('confirmRequestTopicBtn');
+  if (confirmBtn) confirmBtn.disabled = false;
+}
+
+function closeRequestTopicModal() {
+  haptic('light');
+  $('requestTopicModal')?.classList.remove('open');
+  _rtMentorId = null;
+  _rtMentorName = '';
+  _rtSelectedTopicId = null;
+  _rtSourceBtn = null;
+  _rtSourceBtnHtml = '';
+}
+
+async function confirmMentorshipRequestWithTopic() {
+  if (!_rtMentorId || !_rtSelectedTopicId) return;
+  haptic('medium');
+
+  // Close the picker first for a snappy feel
+  $('requestTopicModal')?.classList.remove('open');
+
+  // Flip the source card button to pending optimistically
+  if (_rtSourceBtn) {
+    _rtSourceBtn.disabled = true;
+    _rtSourceBtn.classList.add('btn-pending');
+    _rtSourceBtn.innerHTML = `${MENTOR_ICON_PENDING} ${t('btn_request_pending')}`;
+  }
+
+  const mentorId = _rtMentorId;
+  const topicId = _rtSelectedTopicId;
+  const mentorName = _rtMentorName;
+  const btn = _rtSourceBtn;
+  const originalHtml = _rtSourceBtnHtml;
+
+  // Clear state immediately so the modal is clean for the next use
+  _rtMentorId = null;
+  _rtMentorName = '';
+  _rtSelectedTopicId = null;
+  _rtSourceBtn = null;
+  _rtSourceBtnHtml = '';
+
+  try {
+    await apiFetch('/api/mentors/request', {
+      method: 'POST',
+      body: { mentor_id: mentorId, topic_id: parseInt(topicId, 10), message: 'I would like your mentorship.' }
+    });
+    haptic('success');
+    openMentorRequestSentModal(mentorName);
+    loadMentors();
+  } catch (e) {
+    haptic('error');
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('btn-pending');
+      btn.innerHTML = originalHtml;
+    }
+    showToast(e.message, 'error');
   }
 }
 

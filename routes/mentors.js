@@ -117,17 +117,20 @@ module.exports = function mentorRoutes(supabase, requireAuth, io, onlineUsers) {
       const topicIds = (mtRows || []).map(t => t.topic_id);
 
       let expertise_topics = [];
+      let topics_list = [];
       if (topicIds.length) {
         const { data: topics } = await supabase.from('topics')
-          .select('name')
+          .select('id, name')
           .in('id', topicIds);
         expertise_topics = (topics || []).map(t => t.name);
+        topics_list = topics || [];
       }
 
       return {
         ...mentor,
         mentee_count: count || 0,
         expertise_topics,
+        topics: topics_list,
         request_pending: pendingMentorIds.has(mentor.telegram_id),
       };
     }));

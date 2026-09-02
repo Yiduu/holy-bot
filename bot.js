@@ -1427,7 +1427,7 @@ async function notifyMentorshipRequest(mentorId, requesterId, requesterName, req
     reply_markup: {
       inline_keyboard: [[{
         text: lang === 'am' ? 'ማመልከቻዎችን ይመልከቱ' : 'View Requests',
-        web_app: { url: APP_URL }
+        web_app: { url: `${APP_URL}?start=requests` }
       }]]
     }
   });

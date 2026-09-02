@@ -1057,9 +1057,13 @@ function handleDeepLink() {
       setTimeout(() => openGoalDeepLink(goalId), 100);
       return;
     }
+    if (startParam === 'requests' || startParam.startsWith('requests') || startParam.startsWith('request_')) {
+      setTimeout(() => navigate('requests'), 100);
+      return;
+    }
   }
 
-  // Fallback for direct browser testing
+  // Fallback for direct browser testing or web_app url query params
   const urlParams = new URLSearchParams(window.location.search);
   const browserStart = urlParams.get('start');
   if (browserStart) {
@@ -1075,6 +1079,8 @@ function handleDeepLink() {
     } else if (browserStart.startsWith('goal_')) {
       const goalId = browserStart.replace('goal_', '');
       setTimeout(() => openGoalDeepLink(goalId), 100);
+    } else if (browserStart === 'requests' || browserStart.startsWith('requests') || browserStart.startsWith('request_')) {
+      setTimeout(() => navigate('requests'), 100);
     }
   }
 }

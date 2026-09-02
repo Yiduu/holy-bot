@@ -950,9 +950,17 @@
             <span id="menteeFollowupCount" class="mentee-followup-badge">0</span>
           </div>
         </div>
-        <div class="flex gap-8 mb-12" style="flex-wrap:wrap">
-          <button id="menteeSortRecentBtn" class="btn btn-outline btn-sm" onclick="setMenteeSort('recent')" data-i18n="mentee_sort_recent">Sort: Recently Active</button>
-          <button id="menteeSortFollowupBtn" class="btn btn-outline btn-sm" onclick="setMenteeSort('followup')" data-i18n="mentee_sort_followup">Sort: Needs Follow-up</button>
+        <div class="premium-dropdown form-dropdown mb-12" data-dropdown id="menteeSortDropdown">
+          <button type="button" class="premium-dropdown-btn" data-dropdown-toggle>
+            <span class="dropdown-label" id="menteeSortDropdownLabel" data-i18n="mentee_sort_recent">Sort: Recently Active</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="premium-dropdown-menu" data-dropdown-menu>
+            <button type="button" id="menteeSortRecentBtn" class="dropdown-item selected" onclick="setMenteeSort('recent')" data-i18n="mentee_sort_recent">Sort: Recently Active</button>
+            <button type="button" id="menteeSortFollowupBtn" class="dropdown-item" onclick="setMenteeSort('followup')" data-i18n="mentee_sort_followup">Sort: Needs Follow-up</button>
+          </div>
         </div>
         <div id="menteesList" style="display:flex;flex-direction:column;gap:12px">
           <div class="loading-spinner" style="margin:40px auto"></div>

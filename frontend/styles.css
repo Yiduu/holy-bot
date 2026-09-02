@@ -4212,7 +4212,9 @@ textarea.form-control {
   border: 1px solid var(--border-dim);
   border-radius: 16px;
   position: relative;
-  overflow: hidden;
+  /* visible (not hidden) so the per-card Actions dropdown menu can pop
+     outside the card bounds instead of being clipped */
+  overflow: visible;
   transition: transform 0.25s var(--ease-premium), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
@@ -4223,8 +4225,10 @@ textarea.form-control {
   left: 0;
   right: 0;
   height: 2px;
+  border-radius: 16px 16px 0 0;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  opacity: 0;
+  /* subtle brand-gold hairline always on; brightens further on hover */
+  opacity: 0.55;
   transition: opacity 0.35s ease;
 }
 
@@ -4248,6 +4252,24 @@ textarea.form-control {
   color: var(--text2);
   margin-top: 4px;
   line-height: 1.4;
+}
+
+/* Single compact readout used in the card's top-right corner (replaces the
+   old duplicate "under the name" status row — one place shows activity now). */
+.mentee-status-line-compact {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 0;
+  font-size: 0.75rem;
+  max-width: 130px;
+}
+
+.mentee-status-line-compact .chip-red {
+  font-size: 0.62rem;
+  padding: 3px 7px;
+  white-space: nowrap;
+  flex-basis: 100%;
+  justify-content: flex-end;
 }
 
 .mentee-status-dot {

@@ -222,6 +222,9 @@ const MENTEE_ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   calendar: '<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18"/><path d="M8 3v3"/><path d="M16 3v3"/>',
   pencil: '<path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  transfer: '<path d="M7 3v14"/><path d="M3 7l4-4 4 4"/><path d="M17 21V7"/><path d="M21 17l-4 4-4-4"/>',
+  userMinus: '<path d="M14 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-4A3.5 3.5 0 0 0 3 17.5V19"/><circle cx="8.5" cy="7.5" r="3.5"/><path d="M17 10h5"/>',
+  sliders: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="1.6" fill="currentColor" stroke="none"/>',
 };
 function menteeIcon(name, size = 14) {
   const body = MENTEE_ICONS[name] || '';
@@ -5660,30 +5663,32 @@ let _myMenteesCache = [];
 let _myMenteesFollowupCache = {};
 let _myMenteesStreakCache = {};
 
-/** Builds the small "● Online now / Active 2h ago" status line + optional follow-up chip for a mentee. */
-function renderMenteeStatusLine(user) {
+/**
+ * Single source of truth for a mentee's activity state — online / last-active
+ * time / needs-follow-up — consumed by the one compact status readout on the
+ * mentee card (dot + time, with a follow-up chip when it applies).
+ */
+function menteeActivityMeta(user) {
   const lastActive = user.last_active;
   const online = isUserOnline(lastActive);
   const staleMs = lastActive ? Date.now() - new Date(lastActive).getTime() : Infinity;
   const needsFollowup = !online && staleMs >= MENTEE_INACTIVITY_THRESHOLD_MS;
+  const label = online
+    ? t('mentee_status_online')
+    : (lastActive ? t('mentee_status_active_ago', { time: timeAgo(lastActive) }) : t('mentee_status_never_active'));
+  const dotClass = online ? 'online' : (needsFollowup ? 'stale' : 'offline');
+  return { online, needsFollowup, label, dotClass };
+}
 
-  let dotClass = 'offline';
-  let label;
-  if (online) {
-    dotClass = 'online';
-    label = t('mentee_status_online');
-  } else if (needsFollowup) {
-    dotClass = 'stale';
-    label = lastActive ? t('mentee_status_active_ago', { time: timeAgo(lastActive) }) : t('mentee_status_never_active');
-  } else {
-    label = lastActive ? t('mentee_status_active_ago', { time: timeAgo(lastActive) }) : t('mentee_status_never_active');
-  }
-
-  const chip = needsFollowup
+/** Renders the compact "● Online now / Active 2h ago [Follow-up]" readout for a mentee card. */
+function renderMenteeActivity(user) {
+  const a = menteeActivityMeta(user);
+  const chip = a.needsFollowup
     ? `<span class="chip chip-red" style="margin-left:6px">${t('mentee_needs_followup')}</span>`
     : '';
-
-  return `<div class="mentee-status-line"><span class="mentee-status-dot ${dotClass}"></span>${escapeHtml(label)}${chip}</div>`;
+  return `<div class="mentee-status-line mentee-status-line-compact">
+    <span class="mentee-status-dot ${a.dotClass}"></span>${escapeHtml(a.label)}${chip}
+  </div>`;
 }
 
 // Small flame glyph, same gradient language as the mentee's own Bible Streak
@@ -5715,9 +5720,20 @@ function menteeIsStale(user) {
 
 function setMenteeSort(mode) {
   menteeSortMode = mode;
-  $('menteeSortRecentBtn')?.classList.toggle('sort-active', mode === 'recent');
-  $('menteeSortFollowupBtn')?.classList.toggle('sort-active', mode === 'followup');
+  updateMenteeSortUI();
   renderMenteesList();
+}
+
+/** Syncs the compact sort dropdown (trigger label + selected item + closed state) with menteeSortMode. */
+function updateMenteeSortUI() {
+  const recentBtn = $('menteeSortRecentBtn');
+  const followupBtn = $('menteeSortFollowupBtn');
+  recentBtn?.classList.toggle('selected', menteeSortMode === 'recent');
+  followupBtn?.classList.toggle('selected', menteeSortMode === 'followup');
+  const activeBtn = menteeSortMode === 'followup' ? followupBtn : recentBtn;
+  const label = $('menteeSortDropdownLabel');
+  if (label && activeBtn) label.textContent = activeBtn.textContent;
+  $('menteeSortDropdown')?.removeAttribute('data-open');
 }
 
 function sortedMentees() {
@@ -5761,8 +5777,7 @@ async function loadMyMentees() {
       summaryEl.style.display = followupCount > 0 ? 'flex' : 'none';
       $('menteeFollowupCount').textContent = followupCount;
     }
-    $('menteeSortRecentBtn')?.classList.toggle('sort-active', menteeSortMode === 'recent');
-    $('menteeSortFollowupBtn')?.classList.toggle('sort-active', menteeSortMode === 'followup');
+    updateMenteeSortUI();
 
     if (!_myMenteesCache.length) {
       container.innerHTML = `<div class="empty-state"><span>${t('no_active_mentees_yet')}</span></div>`;
@@ -5799,13 +5814,13 @@ function renderMenteesList() {
     const goalsLabel = fu.total_goals > 0
       ? t('mentee_goals_progress', { done: fu.total_goals - fu.open_goals, total: fu.total_goals })
       : t('mentee_goals_add');
-    const lastActiveStr = user.last_active ? timeAgo(user.last_active) : (t('mentee_status_never_active') || 'Never active');
+    const actionsId = `menteeActions-${assignId}`;
 
     html += `
-      <div class="card mb-16 mentee-card" style="padding: 16px;">
-        <!-- Row 1: Name (left) | Last Active (right) -->
-        <div class="flex justify-between items-start mb-10" style="gap: 12px;">
-          <div class="flex items-center gap-10" style="min-width: 0;">
+      <div class="card gold-border mb-16 mentee-card" style="padding: 16px;">
+        <!-- Row 1: Name + streak (left) | single activity readout (right) -->
+        <div class="flex justify-between items-start mb-12" style="gap: 12px;">
+          <div class="flex items-start gap-10" style="min-width: 0;">
             ${renderAvatar(user, letter)}
             <div style="min-width: 0;">
               <div class="font-bold" style="color:var(--gold); font-size: 0.95rem; word-break: break-word;">${escapeHtml(displayName)}</div>
@@ -5815,20 +5830,21 @@ function renderMenteesList() {
               </div>
             </div>
           </div>
-          <div class="text-xs text-dim text-right" style="flex-shrink: 0; white-space: nowrap; margin-top: 2px;">
-            ${lastActiveStr}
+          <div class="text-right" style="flex-shrink: 0; margin-top: 2px;">
+            ${renderMenteeActivity(user)}
           </div>
         </div>
 
-        <!-- Row 2: Status line (Online / Needs follow-up) with ample space -->
-        <div class="mb-12" style="min-height: 24px;">
-          ${renderMenteeStatusLine(user)}
-        </div>
-
-        <!-- Row 3: Action buttons (Transfer, End) - spacious 2-column layout -->
-        <div class="flex gap-10 mb-12" style="flex-wrap: wrap;">
-          <button class="btn btn-outline btn-sm flex-1" style="min-height: 40px; white-space: normal; text-align: center; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="openTransferModal('${assignId}', '${user.telegram_id}', '${escapeHtml(displayName)}')">${t('btn_transfer')}</button>
-          <button class="btn btn-danger btn-sm flex-1" style="min-height: 40px; white-space: normal; text-align: center; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="endMentorship('${assignId}')">${t('btn_end')}</button>
+        <!-- Row 2: Actions dropdown (Transfer / End Mentorship) -->
+        <div class="premium-dropdown mb-12" data-dropdown id="${actionsId}" style="width:100%;">
+          <button type="button" class="premium-dropdown-btn btn-sm" data-dropdown-toggle style="width:100%; justify-content:space-between;">
+            <span class="dropdown-label" style="display:flex;align-items:center;gap:6px;">${menteeIcon('sliders', 14)}${t('mentee_actions_label') || 'Actions'}</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="premium-dropdown-menu" data-dropdown-menu style="width:100%; min-width:100%; box-sizing:border-box;">
+            <button type="button" class="dropdown-item" onclick="openTransferModal('${assignId}', '${user.telegram_id}', '${escapeHtml(displayName)}')">${menteeIcon('transfer', 14)}${t('btn_transfer')}</button>
+            <button type="button" class="dropdown-item" style="color:var(--danger)" onclick="endMentorship('${assignId}')">${menteeIcon('userMinus', 14)}${t('btn_end')}</button>
+          </div>
         </div>
 
         <!-- Goals toggle and note below -->

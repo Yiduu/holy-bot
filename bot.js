@@ -2696,55 +2696,94 @@ setInterval(async () => {
   if (sent) console.log(`[Scheduler] Sent ${sent} streak reminder(s).`);
 }, 60 * 1000);
 
-// Reminder for mentees who ARE matched with a mentor but have gone quiet.
-// Waits until the mentee has been inactive for 5+ days (checked against
-// users.last_active, which both the bot and the mini app's /api/auth/login
-// keep up to date), then nudges them once a day at a fixed hour. Because
-// the query is re-run fresh every day against current last_active, anyone
-// who becomes active again simply stops matching it — no separate
-// "cancel" step needed, this naturally satisfies "remind until active
-// again."
+// Tiered reminder ladder for mentees who ARE matched with a mentor but
+// have gone quiet (checked against users.last_active, which both the bot
+// and the mini app's /api/auth/login keep up to date).
+//
+// Unlike a flat "remind every day past N days" job, this escalates through
+// three tiers as the inactive stretch grows (3 / 7 / 14 days), and a
+// mentee is only re-pinged once every 2 days (Duolingo-style — no daily
+// nagging) OR immediately if they've just crossed into a new, higher tier,
+// whichever comes first. last_reminder_tier/last_reminder_at on
+// mentorship_assignments track this per assignment. Becoming active again
+// clears both, so the next stretch of silence restarts at tier 1 instead
+// of picking up where it left off.
+const MENTEE_INACTIVITY_TIERS = [
+  { tier: 3, days: 14, key: 'mentee_inactive_reminder_tier3' },
+  { tier: 2, days: 7, key: 'mentee_inactive_reminder_tier2' },
+  { tier: 1, days: 3, key: 'mentee_inactive_reminder_tier1' },
+];
+const MENTEE_REMINDER_RESEND_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
+
 setInterval(async () => {
   const now = getEthiopiaNow();
   if (now.getHours() !== 10 || now.getMinutes() !== 0) return;
 
-  const cutoff = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString();
-
   const { data: assignments, error: aErr } = await supabase
     .from('mentorship_assignments')
-    .select('user_id')
+    .select('id, user_id, mentor_id, last_reminder_tier, last_reminder_at')
     .eq('is_active', true);
   if (aErr) { console.error('[Scheduler] Inactive-mentee query failed:', aErr.message); return; }
   if (!assignments?.length) return;
 
   const menteeIds = [...new Set(assignments.map(a => a.user_id))];
+  const mentorIds = [...new Set(assignments.map(a => a.mentor_id))];
 
-  const { data: inactiveMentees, error: uErr } = await supabase
+  const { data: mentees, error: uErr } = await supabase
     .from('users')
     .select('telegram_id, chat_id, anonymous_id, last_active')
     .in('telegram_id', menteeIds)
-    .eq('is_banned', false)
-    .lte('last_active', cutoff);
+    .eq('is_banned', false);
   if (uErr) { console.error('[Scheduler] Inactive-mentee user fetch failed:', uErr.message); return; }
-  if (!inactiveMentees?.length) return;
+  if (!mentees?.length) return;
 
-  const ids = inactiveMentees.map(u => u.telegram_id);
   const { data: settingsRows } = await supabase
     .from('user_settings')
     .select('telegram_id, display_name, language')
-    .in('telegram_id', ids);
+    .in('telegram_id', [...menteeIds, ...mentorIds]);
   const settingsMap = new Map((settingsRows || []).map(r => [String(r.telegram_id), r]));
+  const menteeMap = new Map(mentees.map(u => [String(u.telegram_id), u]));
 
   let sent = 0;
-  for (const u of inactiveMentees) {
-    const settings = settingsMap.get(String(u.telegram_id));
-    const lang = settings?.language || 'en';
-    const name = settings?.display_name || u.anonymous_id;
+  for (const a of assignments) {
+    const u = menteeMap.get(String(a.user_id));
+    if (!u) continue; // banned, or user fetch missed them
+
+    const daysInactive = (now.getTime() - new Date(u.last_active).getTime()) / (24 * 60 * 60 * 1000);
+    const target = MENTEE_INACTIVITY_TIERS.find(t => daysInactive >= t.days);
+    const targetTier = target?.tier || 0;
+
+    if (targetTier === 0) {
+      // Active again — clear the ladder so the next quiet stretch starts at tier 1.
+      if (a.last_reminder_tier > 0) {
+        await supabase.from('mentorship_assignments')
+          .update({ last_reminder_tier: 0, last_reminder_at: null })
+          .eq('id', a.id);
+      }
+      continue;
+    }
+
+    const tierJustIncreased = targetTier > (a.last_reminder_tier || 0);
+    const intervalElapsed = !a.last_reminder_at
+      || (now.getTime() - new Date(a.last_reminder_at).getTime()) >= MENTEE_REMINDER_RESEND_MS;
+    if (!tierJustIncreased && !intervalElapsed) continue;
+
+    const menteeSettings = settingsMap.get(String(a.user_id));
+    const mentorSettings = settingsMap.get(String(a.mentor_id));
+    const lang = menteeSettings?.language || 'en';
+    const name = menteeSettings?.display_name || u.anonymous_id;
+    const mentorName = mentorSettings?.display_name || tSync(lang, 'mentee_reminder_default_mentor_name');
     const chatId = u.chat_id || u.telegram_id;
-    const ok = await safeSend(chatId, tSync(lang, 'mentee_inactive_reminder', { name: mdEscape(name) }));
-    if (ok) sent++;
+
+    const ok = await safeSend(chatId, tSync(lang, target.key, { name: mdEscape(name), mentor: mdEscape(mentorName) }));
+    if (ok) {
+      sent++;
+      await supabase.from('mentorship_assignments')
+        .update({ last_reminder_tier: targetTier, last_reminder_at: now.toISOString() })
+        .eq('id', a.id);
+    }
   }
-  if (sent) console.log(`[Scheduler] Sent ${sent} inactive-mentee reminder(s).`);
+  if (sent) console.log(`[Scheduler] Sent ${sent} tiered inactive-mentee reminder(s).`);
 }, 60 * 1000);
 
 // Reminder for users who registered but are NOT matched with a mentor and

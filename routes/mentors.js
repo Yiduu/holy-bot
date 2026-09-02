@@ -238,24 +238,23 @@ module.exports = function mentorRoutes(supabase, requireAuth, io, onlineUsers) {
         return res.status(400).json({ error: 'This topic is not offered by this mentor.' });
       }
       if (!userTids.includes(requestedTopicId)) {
-        try {
-          await supabase.from('user_topics').insert({ telegram_id: user_id, topic_id: requestedTopicId });
-        } catch (e) { /* ignore duplicate */ }
+        const { data: tp } = await supabase.from('topics').select('name').eq('id', requestedTopicId).single();
+        const tpName = tp?.name || 'this topic';
+        return res.status(400).json({
+          error_code: 'TOPIC_NOT_IN_MY_TOPICS',
+          topic_name: tpName,
+          error: `You did not select "${tpName}" in your topics. Please set it in your settings.`
+        });
       }
       topic_id = requestedTopicId;
     } else {
       if (common.length === 0) {
-        if (mentorTids.length > 0) {
-          topic_id = mentorTids[0];
-          try {
-            await supabase.from('user_topics').insert({ telegram_id: user_id, topic_id });
-          } catch (e) { /* ignore duplicate */ }
-        } else {
-          return res.status(400).json({ error: 'This mentor has no topics assigned' });
-        }
-      } else {
-        topic_id = common[0];
+        return res.status(400).json({
+          error_code: 'NO_COMMON_TOPICS',
+          error: 'You and this mentor have no shared topics. Please set your topics in settings.'
+        });
       }
+      topic_id = common[0];
     }
 
     // Check for existing rejected request – update it instead of inserting

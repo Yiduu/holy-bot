@@ -1973,7 +1973,7 @@
       <div class="modal-title" data-i18n="select_topic_title">Select a Topic</div>
       <p id="requestTopicSubtitle" class="text-xs text-dim mb-16" style="text-align:center" data-i18n="select_topic_sub">Choose the topic you would like mentorship on with this mentor:</p>
 
-      <div class="form-group mb-16" style="position:relative;overflow:visible;">
+      <div class="form-group mb-12" style="position:relative;overflow:visible;">
         <label class="form-label" data-i18n="select_topic_title">Topic</label>
         <div class="premium-dropdown form-dropdown" data-dropdown id="requestTopicDropdown">
           <button type="button" class="premium-dropdown-btn" data-dropdown-toggle id="requestTopicDropdownBtn">
@@ -1989,7 +1989,10 @@
         </div>
       </div>
 
-      <div class="flex gap-8 mt-20">
+      <!-- Warning if topic is not selected in user's settings -->
+      <div id="requestTopicWarning" class="text-xs" style="display:none;color:#E05C5C;background:rgba(224,92,92,0.1);border:1px solid rgba(224,92,92,0.25);border-radius:10px;padding:9px 12px;line-height:1.45;margin-bottom:12px;"></div>
+
+      <div class="flex gap-8 mt-16">
         <button type="button" class="btn btn-ghost flex-1" onclick="closeRequestTopicModal()" data-i18n="btn_cancel">Cancel</button>
         <button type="button" id="confirmRequestTopicBtn" class="btn btn-primary flex-1" onclick="confirmMentorshipRequestWithTopic()" data-i18n="btn_done">OK</button>
       </div>

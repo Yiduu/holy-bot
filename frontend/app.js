@@ -3150,8 +3150,10 @@ async function loadMentorTopics() {
 let _rtMentorId = null;
 let _rtMentorName = '';
 let _rtSelectedTopicId = null;
+let _rtSelectedTopicName = '';
 let _rtSourceBtn = null;
 let _rtSourceBtnHtml = '';
+let _userStruggleTopicIds = null;
 
 /**
  * Triggered when tapping the "Request" button on a mentor card.
@@ -3168,30 +3170,40 @@ function handleMentorRequestClick(event, mentorId) {
   const mentorName = m?.user_settings?.display_name || m?.anonymous_id || 'Mentor';
   const topics = m?.topics || [];
 
-  // If mentor has 0 or 1 topic, request directly
-  if (topics.length <= 1) {
-    const topicId = topics[0]?.id || null;
-    requestMentorship(event, mentorId, topicId);
+  // If mentor has 0 topics, request directly
+  if (topics.length === 0) {
+    requestMentorship(event, mentorId, null);
     return;
   }
 
-  // Otherwise, open the premium topic selection dropdown modal
+  // Open the premium topic selection dropdown modal
   openRequestTopicModal(event, mentorId, topics, mentorName);
 }
 
 /**
  * Opens the topic picker modal with a premium dropdown.
  */
-function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
+async function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
   haptic('light');
   _rtMentorId = mentorId;
   _rtMentorName = mentorName || '';
   _rtSourceBtn = event?.currentTarget || null;
   _rtSourceBtnHtml = _rtSourceBtn ? _rtSourceBtn.innerHTML : '';
 
-  // Default to the first topic
-  const defaultTopic = mentorTopics[0] || null;
+  // Fetch mentee's struggle topics
+  try {
+    const myTopics = await apiFetch('/api/topics/my');
+    _userStruggleTopicIds = new Set((myTopics || []).map(t => Number(t.topic_id)));
+  } catch (e) {
+    _userStruggleTopicIds = new Set();
+  }
+
+  // Find the first shared topic if available, otherwise default to first mentor topic
+  const firstShared = mentorTopics.find(tp => _userStruggleTopicIds.has(Number(tp.id)));
+  const defaultTopic = firstShared || mentorTopics[0] || null;
+
   _rtSelectedTopicId = defaultTopic ? defaultTopic.id : null;
+  _rtSelectedTopicName = defaultTopic ? defaultTopic.name : '';
 
   // Update subtitle
   const subtitle = $('requestTopicSubtitle');
@@ -3210,23 +3222,40 @@ function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
     inputEl.value = defaultTopic ? defaultTopic.id : '';
   }
 
-  // Populate dropdown items
+  // Populate dropdown items with indicator if in user's topics
   const menuEl = $('requestTopicDropdownMenu');
   if (menuEl) {
-    menuEl.innerHTML = mentorTopics.map((tp, idx) => `
-      <button type="button" class="dropdown-item ${idx === 0 ? 'selected' : ''}" data-value="${tp.id}" onclick="selectRequestTopicDropdown(${tp.id}, \`${escapeHtml(tp.name)}\`)">
-        <span>${escapeHtml(tp.name)}</span>
-      </button>
-    `).join('');
+    menuEl.innerHTML = mentorTopics.map((tp) => {
+      const isSelected = String(tp.id) === String(_rtSelectedTopicId);
+      const isShared = _userStruggleTopicIds.has(Number(tp.id));
+      return `
+        <button type="button" class="dropdown-item ${isSelected ? 'selected' : ''}" data-value="${tp.id}" onclick="selectRequestTopicDropdown(${tp.id}, \`${escapeHtml(tp.name)}\`)">
+          <span style="flex:1;">${escapeHtml(tp.name)}</span>
+          ${isShared ? '<span style="font-size:0.75rem;color:var(--gold);opacity:0.85;">✓</span>' : ''}
+        </button>
+      `;
+    }).join('');
   }
 
-  // Ensure OK button state
-  const confirmBtn = $('confirmRequestTopicBtn');
-  if (confirmBtn) confirmBtn.disabled = !_rtSelectedTopicId;
+  // Update warning visibility
+  updateRequestTopicWarning();
 
   // Reset dropdown open state & show modal
   $('requestTopicDropdown')?.removeAttribute('data-open');
   $('requestTopicModal')?.classList.add('open');
+}
+
+function updateRequestTopicWarning() {
+  const warningEl = $('requestTopicWarning');
+  if (!warningEl) return;
+
+  if (_rtSelectedTopicId && _userStruggleTopicIds && !_userStruggleTopicIds.has(Number(_rtSelectedTopicId))) {
+    const msg = t('topic_not_in_user_topics', { topic: _rtSelectedTopicName }) || `You did not select "${_rtSelectedTopicName}" in your topics. Please set it in your settings.`;
+    warningEl.textContent = msg;
+    warningEl.style.display = 'block';
+  } else {
+    warningEl.style.display = 'none';
+  }
 }
 
 /**
@@ -3235,6 +3264,7 @@ function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
 function selectRequestTopicDropdown(topicId, topicName) {
   haptic('selection');
   _rtSelectedTopicId = topicId;
+  _rtSelectedTopicName = topicName;
 
   const labelEl = $('requestTopicDropdownLabel');
   if (labelEl) labelEl.textContent = topicName;
@@ -3256,23 +3286,36 @@ function selectRequestTopicDropdown(topicId, topicName) {
   // Close dropdown
   $('requestTopicDropdown')?.removeAttribute('data-open');
 
-  const confirmBtn = $('confirmRequestTopicBtn');
-  if (confirmBtn) confirmBtn.disabled = false;
+  // Update warning
+  updateRequestTopicWarning();
 }
 
 function closeRequestTopicModal() {
   haptic('light');
   $('requestTopicModal')?.classList.remove('open');
   $('requestTopicDropdown')?.removeAttribute('data-open');
+  const warningEl = $('requestTopicWarning');
+  if (warningEl) warningEl.style.display = 'none';
   _rtMentorId = null;
   _rtMentorName = '';
   _rtSelectedTopicId = null;
+  _rtSelectedTopicName = '';
   _rtSourceBtn = null;
   _rtSourceBtnHtml = '';
 }
 
 async function confirmMentorshipRequestWithTopic() {
   if (!_rtMentorId || !_rtSelectedTopicId) return;
+
+  // Check if topic is shared in mentee's struggle topics
+  if (_userStruggleTopicIds && !_userStruggleTopicIds.has(Number(_rtSelectedTopicId))) {
+    haptic('error');
+    const msg = t('topic_not_in_user_topics', { topic: _rtSelectedTopicName }) || `You did not select "${_rtSelectedTopicName}" in your topics. Please set it in your settings.`;
+    showToast(msg, 'error');
+    updateRequestTopicWarning();
+    return;
+  }
+
   haptic('medium');
 
   // Close modal
@@ -3296,6 +3339,7 @@ async function confirmMentorshipRequestWithTopic() {
   _rtMentorId = null;
   _rtMentorName = '';
   _rtSelectedTopicId = null;
+  _rtSelectedTopicName = '';
   _rtSourceBtn = null;
   _rtSourceBtnHtml = '';
 

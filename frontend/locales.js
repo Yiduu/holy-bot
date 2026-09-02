@@ -470,7 +470,7 @@ const I18N = {
     "mentorship_ended": "አማካሪነቱ ተጠናቋል። ለጊዜዎ እናመሰግናለን።",
     "mentorship_ended_by_mentor": "📋 አማካሪዎ *{mentor}* የምክር አገልግሎቱን አቋርጠዋል።",
     "mentorship_ended_by_mentee": "📋 ተመካሪዎ *{mentee}* የምክር አገልግሎቱን አቋርጠዋል።",
-    "confirm_end_mentorship": "በእርግጥ የምክር አገልግሎትዎን ማቋረጥ ይፈልጋሉ?",
+    "confirm_end_mentorship": "የምክር አገልግሎትዎን ማቋረጥ ይፈልጋሉ?",
     "rate_mentor_title": "አማካሪዎን ይገምግሙ",
     "rate_mentor_sub": "ከ{name} ጋር የነበረዎት የምክር አገልግሎት አብቅቷል። ልምድዎን ለመገምገም ኮከብ ይንኩ።",
     "btn_skip": "ዝለል",

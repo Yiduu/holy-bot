@@ -167,6 +167,23 @@ body {
   line-height: 1.45;
   text-shadow: 0 0 0.4px currentColor, 0 0 0.4px currentColor;
   -webkit-touch-callout: none;
+  position: relative;
+}
+
+/* Faint grain so the dark theme doesn't read as flat digital black.
+   Fixed and behind everything, so it never affects layout/scroll. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] body::after {
+  opacity: 0.02;
 }
 
 button {
@@ -2305,8 +2322,14 @@ textarea.form-control {
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--gold-light);
-  background: linear-gradient(135deg, #2E2416, #4A3620);
-  border: 1.5px solid var(--border);
+  /* Two-layer background trick instead of a flat border: the fill
+     paints inside the padding box, a conic gradient paints the
+     border box, so the ring reads as a sweep of light rather than
+     a solid gold outline. */
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(135deg, #2E2416, #4A3620) padding-box,
+    conic-gradient(from 180deg, var(--gold-light), var(--gold), #7A5E22, var(--gold), var(--gold-light)) border-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 3px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
   user-select: none;
@@ -2326,7 +2349,7 @@ textarea.form-control {
 
 /* ─── Modern Mentor Card ────────────────────────────────────── */
 .mentor-card {
-  background: var(--surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--border-dim);
   border-radius: 16px;
   padding: 16px;
@@ -2339,9 +2362,29 @@ textarea.form-control {
   transition: transform 0.25s var(--ease-premium), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+/* Gold hairline only shows up on hover/focus, so it reads as a
+   response to attention rather than a line sitting on every card
+   in the list at once. */
+.mentor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
 .mentor-card:hover {
+  transform: translateY(-2px);
   border-color: var(--border);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(203, 160, 92, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(201, 168, 76, 0.1);
+}
+
+.mentor-card:hover::before {
+  opacity: 1;
 }
 
 .mentor-card-top {
@@ -7262,7 +7305,13 @@ textarea.form-control {
    a new opt-in helper class).
    ============================================================ */
 
-/* ─── Background blobs (soft drift + parallax) ─────────────── */
+/* ─── Background glow ────────────────────────────────────────
+   Was three separate blurred orbs (two gold, one blue) drifting
+   on independent auto-play loops. Down to one gold glow, anchored
+   top-center like a single light source instead of scattered
+   decoration. It still responds to pointer/scroll via initParallax()
+   in app.js — that's the deliberate motion, not the idle animation
+   the other two blobs had. */
 .bg-blobs {
   position: fixed;
   inset: 0;
@@ -7274,84 +7323,29 @@ textarea.form-control {
 .bg-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.16;
+  filter: blur(70px);
+  opacity: 0.14;
   will-change: transform;
   transform: translate3d(var(--blob-x, 0px), var(--blob-y, 0px), 0);
   transition: transform 0.6s var(--ease-premium);
 }
 
 [data-theme="light"] .bg-blob {
-  opacity: 0.11;
+  opacity: 0.1;
 }
 
 .bg-blob-1 {
-  width: 340px;
-  height: 340px;
-  top: -80px;
-  left: -60px;
-  background: radial-gradient(circle, var(--gold-light), var(--gold) 70%, transparent 100%);
-  animation: blobDrift1 22s ease-in-out infinite;
+  width: 640px;
+  height: 380px;
+  top: -160px;
+  left: 50%;
+  margin-left: -320px;
+  background: radial-gradient(ellipse, var(--gold-light), var(--gold) 55%, transparent 75%);
 }
 
-.bg-blob-2 {
-  width: 420px;
-  height: 420px;
-  bottom: -140px;
-  right: -100px;
-  background: radial-gradient(circle, var(--accent), transparent 70%);
-  animation: blobDrift2 26s ease-in-out infinite;
-}
-
+.bg-blob-2,
 .bg-blob-3 {
-  width: 260px;
-  height: 260px;
-  top: 42%;
-  left: 58%;
-  background: radial-gradient(circle, var(--gold), transparent 70%);
-  animation: blobDrift3 30s ease-in-out infinite;
-}
-
-@keyframes blobDrift1 {
-
-  0%,
-  100% {
-    translate: 0 0;
-    scale: 1;
-  }
-
-  50% {
-    translate: 30px 40px;
-    scale: 1.08;
-  }
-}
-
-@keyframes blobDrift2 {
-
-  0%,
-  100% {
-    translate: 0 0;
-    scale: 1;
-  }
-
-  50% {
-    translate: -40px -30px;
-    scale: 1.1;
-  }
-}
-
-@keyframes blobDrift3 {
-
-  0%,
-  100% {
-    translate: 0 0;
-    scale: 1;
-  }
-
-  50% {
-    translate: 20px -35px;
-    scale: 0.94;
-  }
+  display: none;
 }
 
 /* Keep the app shell above the blob layer */
@@ -8364,6 +8358,100 @@ textarea.form-control {
   .topics-modal-grid {
     max-height: 38vh;
   }
+}
+
+/* ── Topic photo card (opt-in) ──────────────────────────────
+   Not wired into any render function yet — topics don't have an
+   image field in the schema. This is here for whenever that gets
+   added: give a topic a `photo_url`, render one of these instead
+   of (or alongside) the plain .topic-chip-card pill, and the
+   duotone overlay below will apply itself over any photo without
+   needing per-image color grading.
+
+   Markup once wired up:
+   <div class="topic-photo-card{{ active ? ' active' : '' }}">
+     <div class="topic-photo" style="background-image:url('...')"></div>
+     <span class="topic-check">✓</span>
+     <span class="topic-photo-label">Topic name</span>
+   </div>
+*/
+.topic-photo-card {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--border-dim);
+  transition: transform 0.3s var(--ease-premium), border-color 0.3s ease;
+}
+
+.topic-photo-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border);
+}
+
+.topic-photo-card.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold), 0 8px 24px rgba(201, 168, 76, 0.18);
+}
+
+.topic-photo {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: grayscale(0.5) contrast(1.05);
+}
+
+/* Duotone: the same charcoal-to-gold pair used everywhere else,
+   applied to a photo instead of chrome. */
+.topic-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: color;
+  background: linear-gradient(160deg, var(--bg) 0%, var(--gold) 100%);
+  opacity: 0.55;
+}
+
+.topic-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(13, 15, 20, 0.92) 0%, rgba(13, 15, 20, 0.15) 55%, rgba(13, 15, 20, 0.35) 100%);
+}
+
+.topic-photo-label {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 11px;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--text);
+  letter-spacing: 0.2px;
+}
+
+.topic-photo-card .topic-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #1a1408;
+  font-size: 0.7rem;
+}
+
+.topic-photo-card.active .topic-check {
+  display: flex;
 }
 
 /* ── Form styling overrides for Nickname step ── */

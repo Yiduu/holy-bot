@@ -5802,7 +5802,7 @@ function renderMenteesList() {
     const lastActiveStr = user.last_active ? timeAgo(user.last_active) : (t('mentee_status_never_active') || 'Never active');
 
     html += `
-      <div class="card mb-16" style="padding: 16px;">
+      <div class="card mb-16 mentee-card" style="padding: 16px;">
         <!-- Row 1: Name (left) | Last Active (right) -->
         <div class="flex justify-between items-start mb-10" style="gap: 12px;">
           <div class="flex items-center gap-10" style="min-width: 0;">

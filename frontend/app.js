@@ -3078,49 +3078,72 @@ async function loadMentors() {
 
   try {
     // 1. Fetch active mentor for the user (if any)
-    const activeMentorRes = await apiFetch('/api/users/active-mentor');
-    const activeMentorContainer = $('activeMentorContainer');
-    if (activeMentorContainer) {
-      if (activeMentorRes && activeMentorRes.mentor) {
-        const am = activeMentorRes.mentor;
-        const amName = am.user_settings?.display_name || am.anonymous_id;
-        const amBio = am.user_settings?.bio || "Your assigned mentor.";
-        const amLetter = amName.charAt(0).toUpperCase();
-        const amRating = am.rating || null;
-        const amReviews = am.rating_count || 0;
-        const haloHtml = renderHaloAvatar(am, amLetter, !!am.is_online, 1, true);
+    hasActiveMentorState = false;
+    const activeContainer = $('activeMentorContainer');
+    if (activeContainer) activeContainer.innerHTML = '';
 
-        activeMentorContainer.innerHTML = `
-          <div class="active-mentor-banner">
-            <div class="active-mentor-header">
-              <span class="active-mentor-tag" data-i18n="your_active_mentor">${t('your_active_mentor') || 'Your Active Mentor'}</span>
-            </div>
-            <div class="mentor-card-top" style="margin-top:8px">
-              ${haloHtml}
-              <div class="mentor-card-main">
-                <div class="mentor-name-wrap">
-                  <span class="mentor-name">${escapeHtml(amName)}</span>
-                  <svg class="verified-shield" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                </div>
-                ${renderModernRating(amRating, amReviews)}
+    if (currentUser?.role === 'user') {
+      try {
+        const activeMentorRes = await apiFetch('/api/users/my-mentor');
+        if (activeMentorRes && activeMentorRes.mentor && activeContainer) {
+          hasActiveMentorState = true;
+          const am = activeMentorRes.mentor;
+          const amName = am.user_settings?.display_name || am.anonymous_id;
+          const amBio = am.user_settings?.bio || "Whatever you're carrying, you don't have to carry it alone. I'm here to encourage you with the hope found in Christ.";
+          const amLetter = amName.charAt(0).toUpperCase();
+          const amRating = am.rating || null;
+          const amReviews = am.rating_count || 0;
+          const sexLabel = am.sex === 'M' ? t('sex_male') : am.sex === 'F' ? t('sex_female') : '';
+          const ageLabel = am.age_range || '';
+          const spec = am.user_settings?.specialization || '';
+          const haloHtml = renderHaloAvatar(am, amLetter, !!am.is_online, 1, true);
+          const specTag = spec ? `<span class="mentor-tag-chip spec-chip">${escapeHtml(spec)}</span>` : '';
+
+          activeContainer.innerHTML = `
+            <div class="active-mentor-luxury-card">
+              <div class="active-mentor-top-eyebrow">
+                <span class="active-mentor-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  ${t('your_active_mentor') || 'Your Active Mentor'}
+                </span>
+                <span class="active-mentor-status-pill">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                  ${t('active_mentorship_label') || 'Active Mentorship'}
+                </span>
               </div>
-            </div>
-            <div class="mentor-bio-wrap" style="margin-top:8px">
-              <p class="mentor-bio-text">${escapeHtml(amBio)}</p>
-            </div>
-            <div class="flex gap-8 mt-12">
-              <button class="btn btn-primary btn-sm flex-1" onclick="openChat('${am.telegram_id}')">
-                <span>${t('btn_message') || 'Message'}</span>
-              </button>
-              <button class="btn btn-outline btn-sm" onclick="endMentorship()" style="color:var(--danger)">
-                <span>${t('btn_end') || 'End'}</span>
-              </button>
-            </div>
-          </div>`;
-        activeMentorContainer.style.display = 'block';
-      } else {
-        activeMentorContainer.innerHTML = '';
-        activeMentorContainer.style.display = 'none';
+              <div class="mentor-card-top">
+                ${haloHtml}
+                <div class="mentor-card-main">
+                  <div class="mentor-name-wrap">
+                    <span class="mentor-name">${escapeHtml(amName)}</span>
+                    <svg class="verified-shield" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                  </div>
+                  ${renderModernRating(amRating, amReviews)}
+                  <div class="mentor-demographics-row">
+                    ${sexLabel ? `<span class="mentor-pill-demographic">${escapeHtml(sexLabel)}</span>` : ''}
+                    ${ageLabel ? `<span class="mentor-pill-demographic">${escapeHtml(ageLabel)}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+              ${specTag ? `<div class="mentor-tags-full-row">${specTag}</div>` : ''}
+              <div class="mentor-bio-wrap" style="margin-top:8px">
+                <p class="mentor-bio-text" id="bio-active-${am.telegram_id}">${escapeHtml(amBio)}</p>
+                ${amBio.length > 90 ? `<button class="btn-bio-toggle" onclick="toggleBioExpand('active-${am.telegram_id}')" data-i18n-more="${t('btn_more') || 'More'}" data-i18n-less="${t('btn_less') || 'Less'}">${t('btn_more') || 'More'}</button>` : ''}
+              </div>
+              <div class="mentor-card-bottom" style="margin-top:8px">
+                <div style="display:flex;gap:8px;width:100%">
+                  <button class="btn btn-outline btn-sm flex-1" onclick="openChat('${am.telegram_id}')" style="display:flex;align-items:center;justify-content:center;gap:6px">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>${t('btn_message') || 'Message'}</span>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="endMentorship()">${t('btn_end') || 'End Mentorship'}</button>
+                </div>
+              </div>
+            </div>`;
+          activeContainer.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error fetching active mentor:', err);
       }
     }
 

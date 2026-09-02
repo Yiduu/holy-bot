@@ -3060,14 +3060,10 @@ function renderMentorsList() {
           ${t('capacity_full') || 'Full'}
         </button>`;
     } else {
-      // When a topic chip is active (user is browsing a specific topic), send directly.
-      // When viewing "All Topics", show the topic picker so the user consciously selects.
-      const onclickFn = topicIdParam
-        ? `requestMentorship(event, ${m.telegram_id}${topicIdParam})`
-        : `openRequestTopicModal(event, ${m.telegram_id}, ${JSON.stringify(m.topics || [])}, '${escapeHtml(name).replace(/'/g, '\\&#39;')}' )`;
+      // Clean and safe handler: looks up mentor from cache and routes directly or via topic picker
       actionBtnHtml = `
         <button class="btn btn-primary btn-sm btn-mentor-request" data-mentor-name="${escapeHtml(name)}"
-          onclick="${onclickFn}" ${!canRequest ? 'disabled' : ''}>
+          onclick="handleMentorRequestClick(event, '${m.telegram_id}')" ${!canRequest ? 'disabled' : ''}>
           <span>${t('btn_request')}</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>`;
@@ -3150,8 +3146,7 @@ async function loadMentorTopics() {
   }
 }
 
-// ─── Topic Picker Modal (All Topics → specific topic) ───────────
-// State for the in-flight request from the topic picker
+// ─── Mentorship Request with Premium Topic Picker Modal ─────────
 let _rtMentorId = null;
 let _rtMentorName = '';
 let _rtSelectedTopicId = null;
@@ -3159,56 +3154,108 @@ let _rtSourceBtn = null;
 let _rtSourceBtnHtml = '';
 
 /**
- * Opens the topic picker when the user taps Request from the "All Topics" view.
- * Shows the mentor's topic list as radio-style option cards.
+ * Triggered when tapping the "Request" button on a mentor card.
+ */
+function handleMentorRequestClick(event, mentorId) {
+  // If user is currently filtering by a specific topic chip, send request directly with that topic
+  if (mentorActiveTopicId) {
+    requestMentorship(event, mentorId, mentorActiveTopicId);
+    return;
+  }
+
+  // Find mentor from cache
+  const m = (mentorsCache || []).find(x => String(x.telegram_id) === String(mentorId));
+  const mentorName = m?.user_settings?.display_name || m?.anonymous_id || 'Mentor';
+  const topics = m?.topics || [];
+
+  // If mentor has 0 or 1 topic, request directly
+  if (topics.length <= 1) {
+    const topicId = topics[0]?.id || null;
+    requestMentorship(event, mentorId, topicId);
+    return;
+  }
+
+  // Otherwise, open the premium topic selection dropdown modal
+  openRequestTopicModal(event, mentorId, topics, mentorName);
+}
+
+/**
+ * Opens the topic picker modal with a premium dropdown.
  */
 function openRequestTopicModal(event, mentorId, mentorTopics, mentorName) {
   haptic('light');
   _rtMentorId = mentorId;
   _rtMentorName = mentorName || '';
-  _rtSelectedTopicId = null;
   _rtSourceBtn = event?.currentTarget || null;
   _rtSourceBtnHtml = _rtSourceBtn ? _rtSourceBtn.innerHTML : '';
 
-  // Update subtitle — show mentor name in a gold highlight
+  // Default to the first topic
+  const defaultTopic = mentorTopics[0] || null;
+  _rtSelectedTopicId = defaultTopic ? defaultTopic.id : null;
+
+  // Update subtitle
   const subtitle = $('requestTopicSubtitle');
   if (subtitle) {
-    const raw = t('select_topic_sub') || 'Choose the area you want to focus on with {name}.';
-    subtitle.innerHTML = raw.replace('{name}', `<strong style="color:var(--gold);font-weight:700">${escapeHtml(mentorName)}</strong>`);
+    const raw = t('select_topic_sub') || 'Choose the topic you would like mentorship on with {name}:';
+    subtitle.innerHTML = raw.replace('{name}', `<strong>${escapeHtml(mentorName)}</strong>`);
   }
 
-  // Build topic list
-  const list = $('requestTopicList');
-  if (list) {
-    if (!mentorTopics || mentorTopics.length === 0) {
-      list.innerHTML = `<div class="empty-state"><span>${t('no_topics_found') || 'No topics available'}</span></div>`;
-    } else {
-      list.innerHTML = mentorTopics.map(tp => `
-        <div class="request-topic-option" data-topic-id="${tp.id}" onclick="selectRequestTopic(${tp.id}, this)">
-          <div class="request-topic-radio"><div class="request-topic-radio-dot"></div></div>
-          <span class="request-topic-name">${escapeHtml(tp.name)}</span>
-          <div class="request-topic-check">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-        </div>`).join('');
-    }
+  // Update dropdown label and input value
+  const labelEl = $('requestTopicDropdownLabel');
+  if (labelEl) {
+    labelEl.textContent = defaultTopic ? defaultTopic.name : (t('select_topic_placeholder') || 'Choose a topic…');
+  }
+  const inputEl = $('requestTopicSelectedId');
+  if (inputEl) {
+    inputEl.value = defaultTopic ? defaultTopic.id : '';
   }
 
-  // Disable OK until a selection is made
+  // Populate dropdown items
+  const menuEl = $('requestTopicDropdownMenu');
+  if (menuEl) {
+    menuEl.innerHTML = mentorTopics.map((tp, idx) => `
+      <button type="button" class="dropdown-item ${idx === 0 ? 'selected' : ''}" data-value="${tp.id}" onclick="selectRequestTopicDropdown(${tp.id}, \`${escapeHtml(tp.name)}\`)">
+        <span>${escapeHtml(tp.name)}</span>
+      </button>
+    `).join('');
+  }
+
+  // Ensure OK button state
   const confirmBtn = $('confirmRequestTopicBtn');
-  if (confirmBtn) confirmBtn.disabled = true;
+  if (confirmBtn) confirmBtn.disabled = !_rtSelectedTopicId;
 
+  // Reset dropdown open state & show modal
+  $('requestTopicDropdown')?.removeAttribute('data-open');
   $('requestTopicModal')?.classList.add('open');
 }
 
-function selectRequestTopic(topicId, el) {
-  haptic('light');
+/**
+ * Handles choosing an option from the premium dropdown.
+ */
+function selectRequestTopicDropdown(topicId, topicName) {
+  haptic('selection');
   _rtSelectedTopicId = topicId;
-  // Clear all selections
-  document.querySelectorAll('#requestTopicList .request-topic-option').forEach(opt => opt.classList.remove('selected'));
-  // Mark this one
-  el?.classList.add('selected');
-  // Enable the OK button
+
+  const labelEl = $('requestTopicDropdownLabel');
+  if (labelEl) labelEl.textContent = topicName;
+
+  const inputEl = $('requestTopicSelectedId');
+  if (inputEl) inputEl.value = topicId;
+
+  const menuEl = $('requestTopicDropdownMenu');
+  if (menuEl) {
+    menuEl.querySelectorAll('.dropdown-item').forEach(btn => {
+      if (String(btn.dataset.value) === String(topicId)) {
+        btn.classList.add('selected');
+      } else {
+        btn.classList.remove('selected');
+      }
+    });
+  }
+
+  // Close dropdown
+  $('requestTopicDropdown')?.removeAttribute('data-open');
+
   const confirmBtn = $('confirmRequestTopicBtn');
   if (confirmBtn) confirmBtn.disabled = false;
 }
@@ -3216,6 +3263,7 @@ function selectRequestTopic(topicId, el) {
 function closeRequestTopicModal() {
   haptic('light');
   $('requestTopicModal')?.classList.remove('open');
+  $('requestTopicDropdown')?.removeAttribute('data-open');
   _rtMentorId = null;
   _rtMentorName = '';
   _rtSelectedTopicId = null;
@@ -3227,15 +3275,9 @@ async function confirmMentorshipRequestWithTopic() {
   if (!_rtMentorId || !_rtSelectedTopicId) return;
   haptic('medium');
 
-  // Close the picker first for a snappy feel
+  // Close modal
   $('requestTopicModal')?.classList.remove('open');
-
-  // Flip the source card button to pending optimistically
-  if (_rtSourceBtn) {
-    _rtSourceBtn.disabled = true;
-    _rtSourceBtn.classList.add('btn-pending');
-    _rtSourceBtn.innerHTML = `${MENTOR_ICON_PENDING} ${t('btn_request_pending')}`;
-  }
+  $('requestTopicDropdown')?.removeAttribute('data-open');
 
   const mentorId = _rtMentorId;
   const topicId = _rtSelectedTopicId;
@@ -3243,7 +3285,14 @@ async function confirmMentorshipRequestWithTopic() {
   const btn = _rtSourceBtn;
   const originalHtml = _rtSourceBtnHtml;
 
-  // Clear state immediately so the modal is clean for the next use
+  // Optimistic update on source button
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('btn-pending');
+    btn.innerHTML = `${MENTOR_ICON_PENDING} ${t('btn_request_pending')}`;
+  }
+
+  // Clear state
   _rtMentorId = null;
   _rtMentorName = '';
   _rtSelectedTopicId = null;

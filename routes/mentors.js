@@ -232,21 +232,30 @@ module.exports = function mentorRoutes(supabase, requireAuth, io, onlineUsers) {
     const mentorTids = (mentorTopicsRes.data || []).map(t => t.topic_id);
     const common = userTids.filter(id => mentorTids.includes(id));
 
-    if (common.length === 0) {
-      return res.status(400).json({ error: 'User and mentor have no overlapping topics' });
-    }
-
     let topic_id;
     if (requestedTopicId) {
-      if (!common.includes(requestedTopicId)) {
-        // The mentor may well have this topic, and/or the user may have
-        // browsed to it via the mentor search filter, but since it's not
-        // in BOTH lists it's not an acceptable topic for this request.
-        return res.status(400).json({ error: 'This topic is not shared between you and this mentor. Add it to your own topics to request mentorship on it.' });
+      if (!mentorTids.includes(requestedTopicId)) {
+        return res.status(400).json({ error: 'This topic is not offered by this mentor.' });
+      }
+      if (!userTids.includes(requestedTopicId)) {
+        try {
+          await supabase.from('user_topics').insert({ telegram_id: user_id, topic_id: requestedTopicId });
+        } catch (e) { /* ignore duplicate */ }
       }
       topic_id = requestedTopicId;
     } else {
-      topic_id = common[0];
+      if (common.length === 0) {
+        if (mentorTids.length > 0) {
+          topic_id = mentorTids[0];
+          try {
+            await supabase.from('user_topics').insert({ telegram_id: user_id, topic_id });
+          } catch (e) { /* ignore duplicate */ }
+        } else {
+          return res.status(400).json({ error: 'This mentor has no topics assigned' });
+        }
+      } else {
+        topic_id = common[0];
+      }
     }
 
     // Check for existing rejected request – update it instead of inserting

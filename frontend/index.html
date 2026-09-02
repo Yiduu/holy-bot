@@ -1967,38 +1967,31 @@
   </div>
 
   <!-- ─── Mentorship Request Topic Picker Modal ──────────────── -->
-  <!-- ─── Request Topic Picker Modal ──────────────────────────── -->
   <div id="requestTopicModal" class="modal-overlay" onclick="if(event.target===this)closeRequestTopicModal()">
-    <div class="modal-sheet req-topic-sheet">
+    <div class="modal-sheet" style="max-width:400px;margin:0 auto;overflow:visible;">
       <div class="modal-handle"></div>
+      <div class="modal-title" data-i18n="select_topic_title">Select a Topic</div>
+      <p id="requestTopicSubtitle" class="text-xs text-dim mb-16" style="text-align:center" data-i18n="select_topic_sub">Choose the topic you would like mentorship on with this mentor:</p>
 
-      <!-- Header: gold icon + question -->
-      <div class="req-topic-header">
-        <div class="req-topic-header-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2a7 7 0 0 1 7 7c0 3-1.8 5.6-4.5 6.7V17a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-1.3C6.8 14.6 5 12 5 9a7 7 0 0 1 7-7z"/>
-            <path d="M9 21h6"/><path d="M10 17v1"/><path d="M14 17v1"/>
-          </svg>
+      <div class="form-group mb-16" style="position:relative;overflow:visible;">
+        <label class="form-label" data-i18n="select_topic_title">Topic</label>
+        <div class="premium-dropdown form-dropdown" data-dropdown id="requestTopicDropdown">
+          <button type="button" class="premium-dropdown-btn" data-dropdown-toggle id="requestTopicDropdownBtn">
+            <span class="dropdown-label" id="requestTopicDropdownLabel" data-i18n="select_topic_placeholder">Choose a topic…</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="premium-dropdown-menu" data-dropdown-menu id="requestTopicDropdownMenu">
+            <!-- Dynamically populated topic dropdown items -->
+          </div>
+          <input type="hidden" id="requestTopicSelectedId" value="" />
         </div>
-        <h3 class="req-topic-question" data-i18n="select_topic_title">Which topic?</h3>
-        <p id="requestTopicSubtitle" class="req-topic-sub" data-i18n="select_topic_sub">Choose the area you want to focus on with this mentor.</p>
       </div>
 
-      <!-- Divider -->
-      <div class="req-topic-divider"></div>
-
-      <!-- Scrollable topic list -->
-      <div id="requestTopicList" class="request-topic-list">
-        <!-- Dynamically rendered selectable topic options -->
-      </div>
-
-      <!-- Action bar -->
-      <div class="req-topic-actions">
-        <button type="button" class="btn btn-ghost req-topic-cancel" onclick="closeRequestTopicModal()" data-i18n="btn_cancel">Cancel</button>
-        <button type="button" id="confirmRequestTopicBtn" class="btn btn-primary req-topic-confirm" onclick="confirmMentorshipRequestWithTopic()" data-i18n="btn_done" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-i18n="btn_done">Request Mentorship</span>
-        </button>
+      <div class="flex gap-8 mt-20">
+        <button type="button" class="btn btn-ghost flex-1" onclick="closeRequestTopicModal()" data-i18n="btn_cancel">Cancel</button>
+        <button type="button" id="confirmRequestTopicBtn" class="btn btn-primary flex-1" onclick="confirmMentorshipRequestWithTopic()" data-i18n="btn_done">OK</button>
       </div>
     </div>
   </div>

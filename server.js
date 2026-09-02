@@ -51,7 +51,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] }));
+// Origin is locked down via ALLOWED_ORIGIN in production. Falls back to '*'
+// only when that var isn't set, so local dev keeps working out of the box.
+const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+app.use(cors({ origin: allowedOrigin, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] }));
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.static('frontend'));

@@ -1,45 +1,83 @@
-# Holy Platform - Expanded Counseling Support
+# Holy — Anonymous Christian Counseling Platform
 
-A comprehensive Christian counseling platform with support for multiple counseling topics, unified through a powerful Telegram Bot.
+A Telegram bot paired with a Mini App for anonymous peer counseling and
+mentorship. Users pick a topic they're struggling with (pornography, drugs,
+anxiety, and others — configurable), get matched with a mentor, and can chat,
+video call, track a Bible-reading streak, and journal. Admins run the whole
+thing from a dashboard in the Mini App.
 
-## 🚀 Key Features
+## What's in the box
 
-### 🤖 Telegram Bot (Central Hub)
-- **Multi-Topic Registration**: Users select areas of struggle (Porn, Drugs, Anxiety, etc.).
-- **Expertise Matching**: Mentors specify expertise topics; users find mentors filtered by topic.
-- **Pure Telegram Chat**: Plain-text messaging with context-awareness for mentors (1-hour memory).
-- **Bible Streaks & Journaling**: Track spiritual progress and personal reflections.
-- **Daily Verses**: Opt-in daily verses with Amharic translation support.
-- **Video Sessions**: Schedule and receive session deep links directly in the bot.
+**Telegram bot**
+- Registration flow that assigns an anonymous handle (`Warrior_9XkL2` style)
+- Topic-based mentor matching — mentees pick struggles, mentors pick expertise
+- Plain-text chat routed through the bot, with a one-hour "reply context"
+  window (`/reply @nickname`) so a mentor talking to several people at once
+  doesn't have to repeat a target on every message
+- Daily Bible verses, opt-in, with Amharic translations
+- Session reminders and follow-up nudges for mentors
+- Bot commands: `/start`, `/menu`, `/apply` (mentor application), `/settopics`,
+  `/end` (end an active mentorship), `/reply`, `/repair_assignments`
 
-### 📱 Telegram Mini-App
-- **Video Calls**: Jitsi Meet integration for 1-on-1 and Group sessions.
-- **Admin Dashboard**: Manage users, review mentor applications, and manage counseling topics.
+**Mini App (frontend/)**
+- Onboarding and profile setup
+- 1-on-1 and group video calls via Jitsi Meet
+- Bible streak tracking and personal journaling
+- Support ticket system with threaded replies
+- Admin dashboard (`admin.html`): user management, mentor application
+  review, message moderation, support tickets, topic management, broadcast
+  messages, audit log
 
-## 🛠 Setup
+**Backend**
+- Node.js / Express, Socket.IO for real-time chat presence, Supabase for
+  the database and auth
+- Telegram WebApp `initData` signature verification on every authenticated
+  request
+- Tiered rate limiting (general API, auth endpoints, broadcast)
+- Winston logging, optional Sentry error tracking (just leave `SENTRY_DSN`
+  blank to skip it)
+- English and Amharic UI strings (`local/en.json`, `local/am.json`,
+  `frontend/locales.js`)
 
-### 1. Database Migrations
-Run these in your Supabase SQL editor:
-1. `supabase/01_schema.sql`
-2. `database/migrations/03_add_features.sql`
-3. `database/migrations/04_add_topics.sql` (New: Multi-topic support)
+## Setup
 
-### 2. Environment Variables
-```env
-TELEGRAM_BOT_TOKEN=...
-SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...
-MINI_APP_URL=...
-```
+### 1. Environment variables
 
-### 3. Installation
+Copy `.env.example` to `.env` and fill it in. Every variable the app reads is
+listed there with a comment on what it's for.
+
+### 2. Database
+
+The schema is split across three migration folders for historical reasons.
+Follow `MIGRATIONS.md` — it lists the exact files and order to run them in
+against your Supabase project's SQL editor.
+
+### 3. Install and run
+
 ```bash
 npm install
-npm start
+npm start        # or: npm run dev, for nodemon
 ```
 
-## 💬 Chat Commands
-- `/reply @nickname <message>`: Specifically target a mentee (sets context for 1 hour).
-- `/reply @nickname`: Set focus context without sending a message.
-- `/apply`: Start the mentor application process.
-- `/settopics`: Update your counseling topics.
+### 4. Telegram side
+
+Register your bot with [@BotFather](https://t.me/BotFather), point its Mini
+App URL at wherever you deploy `frontend/` (Render, in the reference
+deployment), and set `MINI_APP_URL` accordingly in your `.env`.
+
+### 5. Locking down CORS for production
+
+By default `ALLOWED_ORIGIN` is unset and CORS falls back to `*`, which is
+fine for local development. Before you go live, set `ALLOWED_ORIGIN` in your
+`.env` to your actual Mini App URL.
+
+## Deployment notes
+
+The reference deployment runs on Render with Supabase as the database. There's
+no CI pipeline and no automated test suite yet — testing so far has been
+manual. If you're picking this up as a buyer, budget time for at least a
+smoke-test pass before pointing it at real users.
+
+## License
+
+See `LICENSE.md`.

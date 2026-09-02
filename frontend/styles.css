@@ -7969,14 +7969,15 @@ textarea.form-control {
 
 /* ─── Streak card: completed-for-today state ────────────────── */
 .streak-card.is-done-today {
-  border-color: rgba(91, 173, 122, 0.35);
-  box-shadow: 0 0 0 1px rgba(91, 173, 122, 0.12), var(--shadow-gold);
+  border-color: rgba(32, 24, 10, 0.35);
 }
 
 .streak-card.is-done-today .streak-hero-btn {
-  background: rgba(91, 173, 122, 0.14);
-  color: var(--success);
-  border: 1px solid rgba(91, 173, 122, 0.3);
+  background: linear-gradient(135deg, var(--espresso), #161005);
+  color: var(--gold-light);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0.88;
+  cursor: default;
 }
 
 /* ─── Streak card: milestone celebration pulse ──────────────── */

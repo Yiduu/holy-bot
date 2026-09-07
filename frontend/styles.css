@@ -340,6 +340,18 @@ h3 {
   font-weight: 700;
 }
 
+/* Most headers wrap their leading (back-button + title) content in a
+   `.flex.items-center.gap-N` div, with the header's other action button as
+   its sibling. That wrapper was never itself allowed to shrink inside
+   `.app-header`'s flex row, so a long title's `flex:1` (above) had no
+   effect — the wrapper just grew to fit the text and pushed the sibling
+   action button off-screen. Letting the wrapper shrink lets the title's
+   own ellipsis rule (above) do its job instead. */
+.app-header > .flex {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* Every page's header has a different second child next to the h2 —
    a .header-actions row (lang/theme toggles), a single bare <button>
    (Save / Clear / + New), or a plain <div> of buttons (Journal). None
@@ -606,6 +618,70 @@ h3 {
 
 .bottom-nav::-webkit-scrollbar {
   height: 2px;
+}
+
+/* ── Landscape / short-viewport compact mode ──────────────────────
+   Almost every page's vertical spacing (page-content padding,
+   .chat-container/.chat-messages height, .ticket-detail-content
+   min-height, etc.) is already derived from --nav-h and --app-height,
+   so shrinking --nav-h here and compacting the header/input rows
+   cascades through the rest of the layout automatically instead of
+   needing a per-page override. This targets landscape phones (~
+   360-430px tall visible viewport), where the *portrait* --nav-h
+   (68px) plus a full app-header plus the chat input row was eating a
+   large enough share of the screen to overflow the bottom nav, hide
+   the chat input behind the keyboard, and misalign fixed-position
+   elements that assumed a taller viewport. */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --nav-h: 46px;
+  }
+
+  .bottom-nav {
+    padding: 0 6px;
+  }
+
+  .nav-item {
+    min-width: 44px;
+    padding: 4px 6px;
+    gap: 0;
+  }
+
+  /* Icon-only nav in landscape — there isn't enough vertical room for the
+     icon + label stack at a usable tap-target size otherwise. */
+  .nav-item span {
+    display: none;
+  }
+
+  .nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .app-header {
+    min-height: 42px;
+    padding: calc(6px + env(safe-area-inset-top)) 14px 6px;
+  }
+
+  .app-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .page-content {
+    padding: 10px 16px calc(10px + var(--nav-h) + env(safe-area-inset-bottom, 0px)) 16px;
+  }
+
+  .chat-input-row {
+    padding: 6px 12px;
+  }
+
+  /* Grid content (mostly) fits fine at this width, but the picker's fixed
+     grid rows can otherwise render taller than the whole landscape
+     viewport and get clipped off-screen above it. */
+  .emoji-picker {
+    max-height: calc(var(--app-height) - var(--nav-h) - 90px);
+    overflow-y: auto;
+  }
 }
 
 .nav-item {
@@ -7804,65 +7880,10 @@ textarea.form-control {
   gap: 12px;
 }
 
-.ticket-bubble {
-  max-width: 92%;
-  padding: 14px 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
-  position: relative;
-  animation: fadeInSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ticket-bubble-user {
-  align-self: flex-end;
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.18) 0%, rgba(var(--bg3-rgb), 0.92) 100%);
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  border-bottom-right-radius: 4px;
-}
-
-.ticket-bubble-admin {
-  align-self: flex-start;
-  background: linear-gradient(135deg, rgba(91, 142, 255, 0.15) 0%, rgba(var(--bg2-rgb), 0.92) 100%);
-  border: 1px solid rgba(91, 142, 255, 0.32);
-  border-bottom-left-radius: 4px;
-}
-
-.ticket-bubble-hdr {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.ticket-bubble-user .ticket-bubble-hdr {
-  color: var(--gold-light);
-}
-
-.ticket-bubble-admin .ticket-bubble-hdr {
-  color: #7AA5FF;
-}
-
-.ticket-bubble-body {
-  font-size: 0.88rem;
-  line-height: 1.48;
-  color: var(--text);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
+/* Ticket messages now reuse .message-bubble/.message-text/.message-footer
+   (see loadTicketDetail() in app.js) so they render identically to the
+   main mentor chat — no separate .ticket-bubble* styles needed here
+   anymore. */
 
 /* ── Ticket detail page content ───────────────────────────────
    Was inline `min-height:calc(100vh - 140px); padding-bottom:20px`,
@@ -7960,24 +7981,27 @@ textarea.form-control {
 }
 
 /* ── Resolve / reopen bar in ticket chat ──────────────────────── */
+/* Made smaller/quieter (was a full-width card competing visually with the
+   conversation above it) — this is a status strip, not another message,
+   so it now reads like a caption rather than another bubble in the thread. */
 .ticket-resolve-bar {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  border-radius: 12px;
-  background: rgba(var(--bg3-rgb), 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
 }
 
 .ticket-resolve-note {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--text2);
+  color: var(--text3);
 }
 
 .ticket-resolve-btn {

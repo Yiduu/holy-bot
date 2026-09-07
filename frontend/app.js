@@ -3246,7 +3246,7 @@ function renderMentorsList() {
     return;
   }
 
-  container.innerHTML = listToShow.map(m => {
+  const cardHtmls = listToShow.map(m => {
     const name = m.user_settings?.display_name || m.anonymous_id;
     const bio = m.user_settings?.bio || "I'm here as a mentor to walk alongside you through faith and life's challenges.";
     const spec = m.user_settings?.specialization || '';
@@ -3329,7 +3329,6 @@ function renderMentorsList() {
 
     return `
       <div class="mentor-card" data-mentor-id="${m.telegram_id}">
-        <!-- Top header row: Avatar + Name / Rating / Demographics -->
         <div class="mentor-card-top">
           ${haloHtml}
           <div class="mentor-card-main">
@@ -3371,12 +3370,47 @@ function renderMentorsList() {
             ${actionBtnHtml}
           </div>
         </div>
-      </div>`;
-  }).join('');
+  });
 
-  applyLanguage();
-  hydrateAvatars(container);
-  if ($('activeMentorContainer')) hydrateAvatars($('activeMentorContainer'));
+  // Setting innerHTML to dozens of these cards (each with several inline
+  // SVGs) in one shot is what was making the mentors list feel laggy on
+  // older phones — the browser has to parse/layout/paint the whole batch
+  // before the page becomes responsive again. Below a threshold this is
+  // unnoticeable, so short lists still render in one pass exactly as
+  // before; longer lists paint an initial batch immediately (so the
+  // screen isn't blank) and stream the rest in over a few animation
+  // frames so scrolling/taps stay responsive while it finishes.
+  const BATCH_THRESHOLD = 15;
+  const BATCH_SIZE = 10;
+
+  function finishMentorsRender() {
+    applyLanguage();
+    hydrateAvatars(container);
+    if ($('activeMentorContainer')) hydrateAvatars($('activeMentorContainer'));
+  }
+
+  if (cardHtmls.length <= BATCH_THRESHOLD) {
+    container.innerHTML = cardHtmls.join('');
+    finishMentorsRender();
+  } else {
+    container.innerHTML = cardHtmls.slice(0, BATCH_SIZE).join('');
+    finishMentorsRender();
+
+    let i = BATCH_SIZE;
+    (function renderNextBatch() {
+      if (i >= cardHtmls.length) return;
+      requestAnimationFrame(() => {
+        container.insertAdjacentHTML('beforeend', cardHtmls.slice(i, i + BATCH_SIZE).join(''));
+        i += BATCH_SIZE;
+        // Re-running these per batch only touches the newly-added nodes —
+        // applyLanguage() re-scans data-i18n attrs and hydrateAvatars()
+        // skips anything already marked .avatar-loaded — so this stays
+        // cheap even though it's called several times.
+        finishMentorsRender();
+        renderNextBatch();
+      });
+    })();
+  }
 }
 
 async function loadMentorTopics() {
@@ -4579,6 +4613,20 @@ async function leaveCurrentSession() {
 window.chatState = {};
 window.replyToId = null;
 
+// A mentor's chat-partner dropdown otherwise resets to the first mentee
+// every time the chat page is left and reopened (including a full app
+// restart), since window.chatState is just an in-memory object. Persist
+// the mentor's last-viewed mentee per-mentor in localStorage so loadChat()
+// can restore it instead of always defaulting to mentees[0].
+function getLastChatPartner(mentorId) {
+  if (!mentorId) return null;
+  try { return localStorage.getItem(`holy_last_mentee_${mentorId}`); } catch { return null; }
+}
+function setLastChatPartner(mentorId, partnerId) {
+  if (!mentorId || !partnerId) return;
+  try { localStorage.setItem(`holy_last_mentee_${mentorId}`, String(partnerId)); } catch { }
+}
+
 async function loadChat() {
   try {
     const targetId = window.pendingChatPartner;
@@ -4607,8 +4655,12 @@ async function loadChat() {
       $('chatWith').style.display = 'none';
       if (partnerWrapper) partnerWrapper.style.display = 'block';
 
-      const selectedId = targetId || res.mentees[0].telegram_id;
+      // Priority: an explicit target (user just tapped a mentee) > the
+      // mentor's last-viewed mentee from a previous visit > the first mentee.
+      const storedId = targetId ? null : getLastChatPartner(currentUser?.telegram_id);
+      const selectedId = targetId || storedId || res.mentees[0].telegram_id;
       const partner = res.mentees.find(m => String(m.telegram_id) === String(selectedId)) || res.mentees[0];
+      setLastChatPartner(currentUser?.telegram_id, partner.telegram_id);
 
       // Update selected partner name in custom dropdown button
       const selectedNameEl = $('chatPartnerSelectedName');
@@ -5923,42 +5975,30 @@ async function loadTicketDetail(ticketId) {
 
     renderTicketResolveBar(status, ticket.resolved_by);
 
-    // Render original ticket message + reply thread
-    let html = `
-      <div class="ticket-bubble ticket-bubble-user" style="align-self:flex-start;width:100%;max-width:100%;margin-bottom:12px;background:linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(var(--bg2-rgb),0.85) 100%);border:1px solid rgba(201,168,76,0.25)">
-        <div class="ticket-bubble-hdr">
-          <span style="display:flex;align-items:center;gap:5px;color:var(--gold-light)">${ticketIcon('user', 13)} <strong>You</strong> (Original Issue)</span>
-          <span style="font-weight:normal;color:var(--text3);font-size:0.7rem">${formatDateTime(ticket.created_at)}</span>
+    // Render original ticket message + reply thread as plain speech
+    // bubbles, matching the main mentor chat: just the text and a
+    // timestamp, aligned right (gold, "sent") for the user's own messages
+    // and left (dark, "received") for admin replies. The old card-style
+    // layout — icon + role label header, wide 92%-width boxes regardless
+    // of sender, the user's own "Original Issue" message oddly pinned to
+    // the left — is gone; a reader can now tell the two sides apart by
+    // position and colour the same way they already do in the mentor chat.
+    const ticketBubble = (content, time, isSent) => `
+      <div class="message-bubble ${isSent ? 'sent' : 'received'}">
+        <div class="message-text">${escapeHtml(content)}</div>
+        <div class="message-footer">
+          <span class="message-time">${formatTime(time)}</span>
         </div>
-        <div class="ticket-bubble-body">${escapeHtml(ticket.description)}</div>
       </div>`;
 
+    let html = ticketBubble(ticket.description, ticket.created_at, true);
+
     if (replies.length === 0 && ticket.admin_reply) {
-      html += `
-        <div class="ticket-bubble ticket-bubble-admin" style="align-self:flex-start;width:100%;max-width:100%;margin-bottom:12px">
-          <div class="ticket-bubble-hdr">
-            <span style="display:flex;align-items:center;gap:5px;color:#7AA5FF">${ticketIcon('shield', 13)} <strong>Support Admin</strong></span>
-            <span style="font-weight:normal;color:var(--text3);font-size:0.7rem">${formatDateTime(ticket.updated_at || ticket.created_at)}</span>
-          </div>
-          <div class="ticket-bubble-body">${escapeHtml(ticket.admin_reply)}</div>
-        </div>`;
+      html += ticketBubble(ticket.admin_reply, ticket.updated_at || ticket.created_at, false);
     }
 
     replies.forEach(r => {
-      const isAdmin = r.sender_type === 'admin';
-      const bubbleClass = isAdmin ? 'ticket-bubble-admin' : 'ticket-bubble-user';
-      const titleText = isAdmin
-        ? `${ticketIcon('shield', 13)} Support Admin`
-        : `${ticketIcon('user', 13)} You`;
-
-      html += `
-        <div class="ticket-bubble ${bubbleClass}" style="margin-bottom:8px">
-          <div class="ticket-bubble-hdr">
-            <span style="display:flex;align-items:center;gap:5px">${titleText}</span>
-            <span style="font-weight:normal;color:var(--text3);font-size:0.7rem">${formatDateTime(r.created_at)}</span>
-          </div>
-          <div class="ticket-bubble-body">${escapeHtml(r.content)}</div>
-        </div>`;
+      html += ticketBubble(r.content, r.created_at, r.sender_type !== 'admin');
     });
 
     threadContainer.innerHTML = html;

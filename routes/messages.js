@@ -112,10 +112,21 @@ module.exports = function messageRoutes(supabase, requireAuth, io, onlineUsers) 
     // duration and file_name once those columns exist on the table (see the
     // migration script), so no changes are needed here for the mini app to
     // receive attachment metadata alongside regular text messages.
+    // Cleared/soft-deleted messages were previously still being fetched and
+    // re-rendered on every load — as a conversation accumulates deletions
+    // over time this means the "last 100" window keeps counting messages
+    // the user can no longer see, so real recent messages fall out of it,
+    // and the client wastes work rendering rows it just throws away.
+    // Filtering is_deleted here keeps the 100-message window meaningful
+    // and shrinks the payload/render work as history grows.
     const { data, error } = await supabase
       .from('messages')
       .select('*')
       .or(`and(from_id.eq.${my_id},to_id.eq.${other_id}),and(from_id.eq.${other_id},to_id.eq.${my_id})`)
+      // `is_deleted` predates its own tracked migration in this repo, so
+      // older rows may have it NULL rather than false — match both so we
+      // don't silently drop pre-existing messages that were never deleted.
+      .or('is_deleted.eq.false,is_deleted.is.null')
       .order('created_at', { ascending: false })
       .limit(100);
 

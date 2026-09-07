@@ -1029,9 +1029,9 @@ async function init() {
     console.error(e);
     showToast('Connection error', 'error');
     showOnboarding();
+  } finally {
+    $('loadingScreen')?.classList.add('hidden');
   }
-
-  $('loadingScreen')?.classList.add('hidden');
 }
 
 function handleDeepLink() {
@@ -3370,6 +3370,7 @@ function renderMentorsList() {
             ${actionBtnHtml}
           </div>
         </div>
+      </div>`;
   });
 
   // Setting innerHTML to dozens of these cards (each with several inline
@@ -7667,7 +7668,7 @@ document.addEventListener('click', (e) => {
     observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
   }
 
-  function init() {
+  function initEnhancements() {
     ensureBlobs();
     initParallax();
     initRipple();
@@ -7678,9 +7679,16 @@ document.addEventListener('click', (e) => {
     wrap('loadMentors', decorateMentorList);
   }
 
+  function start() {
+    if (typeof window.init === 'function') {
+      window.init();
+    }
+    initEnhancements();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', start);
   } else {
-    init();
+    start();
   }
 })();

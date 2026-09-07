@@ -6291,10 +6291,14 @@ function menteeActivityMeta(user) {
 function renderMenteeActivity(user) {
   const a = menteeActivityMeta(user);
   const chip = a.needsFollowup
-    ? `<span class="chip chip-red" style="margin-left:6px">${t('mentee_needs_followup')}</span>`
+    ? `<span class="mentee-followup-pill">${t('mentee_needs_followup')}</span>`
     : '';
   return `<div class="mentee-status-line mentee-status-line-compact">
-    <span class="mentee-status-dot ${a.dotClass}"></span>${escapeHtml(a.label)}${chip}
+    <div class="mentee-status-row">
+      <span class="mentee-status-dot ${a.dotClass}"></span>
+      <span class="mentee-status-text">${escapeHtml(a.label)}</span>
+    </div>
+    ${chip}
   </div>`;
 }
 
@@ -6426,13 +6430,13 @@ function renderMenteesList() {
     html += `
       <div class="card gold-border mb-16 mentee-card" style="padding: 16px;">
         <!-- Row 1: Name + streak (left) | single activity readout (right) -->
-        <div class="flex justify-between items-start mb-12" style="gap: 12px;">
-          <div class="flex items-start gap-10" style="min-width: 0;">
+        <div class="flex justify-between items-start mb-12" style="gap: 8px;">
+          <div class="flex items-start gap-10" style="flex: 1; min-width: 0;">
             ${renderAvatar(user, letter)}
-            <div style="min-width: 0;">
-              <div class="font-bold" style="color:var(--gold); font-size: 0.95rem; word-break: break-word;">${escapeHtml(displayName)}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div class="font-bold" style="color:var(--gold); font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(displayName)}</div>
               <!-- Streak badge placed directly below the name -->
-              <div style="margin-top: 4px;">
+              <div style="margin-top: 3px;">
                 ${renderMenteeStreakBadge(user.telegram_id)}
               </div>
             </div>

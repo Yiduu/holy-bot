@@ -959,11 +959,11 @@ function showToast(msg, type = 'info') {
   t.className = `toast toast-${type}`;
   t.textContent = msg;
   t.style.cssText = `
-    position:fixed;top:16px;left:50%;transform:translateX(-50%);
+    position:fixed;top:16px;left:50%;transform:translateX(-50%) translateZ(0);-webkit-transform:translateX(-50%) translateZ(0);
     background:${type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--bg3)'};
     color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;
     font-size:.85rem;font-weight:700;animation:fadeIn .2s ease;
-    max-width:90vw;text-align:center;
+    max-width:90vw;text-align:center;will-change:transform,opacity;
   `;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
@@ -4773,9 +4773,12 @@ function openChat(partnerId) {
 }
 
 async function loadMessages(with_id) {
+  const container = $('chatMessages');
+  if (container) container.classList.add('loading');
+
   try {
     const messages = await apiFetch(`/api/messages/${with_id}`);
-    const container = $('chatMessages');
+    if (!container) return;
 
     if (!window._chatMessagesMap) window._chatMessagesMap = new Map();
     function indexMessages(list) {
@@ -4809,6 +4812,12 @@ async function loadMessages(with_id) {
   } catch (e) {
     console.error(e);
     throw e;
+  } finally {
+    if (container) {
+      requestAnimationFrame(() => {
+        container.classList.remove('loading');
+      });
+    }
   }
 }
 
@@ -7549,23 +7558,9 @@ document.addEventListener('click', (e) => {
     }, true);
   }
 
-  // ── Ripple effect on presses (event delegation, no markup needed) ──
+  // ── Ripple effect removed to eliminate touch lag/jank ──
   function initRipple() {
-    document.addEventListener('pointerdown', (e) => {
-      const el = e.target.closest('.btn, .card, .journal-item, .mentor-card');
-      if (!el) return;
-      el.classList.add('ripple-container');
-
-      const rect = el.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const ripple = document.createElement('span');
-      ripple.className = 'ripple-effect';
-      ripple.style.width = ripple.style.height = size + 'px';
-      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
-      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
-      el.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600);
-    }, { passive: true });
+    // Disabled
   }
 
   // ── Staggered fade: restart the CSS animation whenever a

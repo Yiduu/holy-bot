@@ -72,30 +72,17 @@
   --inset-hi-gold: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-/* ─── Smooth theme transitions (fix blinks/bubbles on mobile) ───
-   A minimal, explicit transition list — only the properties that
-   actually change when data-theme flips — instead of transitioning
-   everything, which is what was causing the visible flash/jank. */
-:root {
-  --theme-transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+/* ─── Smooth theme transitions (GPU View Transition + fallback) ─── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
-body,
-.app-header,
-.bottom-nav,
-.chat-input-row,
-.card,
-.mentor-card,
-.session-item {
-  transition: var(--theme-transition);
-}
-
-.btn,
-.toggle,
-.nav-item,
-.stat-card,
-.journal-item {
-  transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease, border-color 0.12s ease;
+html.theme-transitioning,
+html.theme-transitioning * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+  transition-delay: 0s !important;
 }
 
 @media (max-width: 480px) {
@@ -3292,13 +3279,6 @@ textarea.form-control {
   -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-  transition: opacity 0.12s ease;
-  will-change: opacity;
-}
-
-.chat-messages.loading {
-  opacity: 0;
-  pointer-events: none;
 }
 
 #page-chat.active {

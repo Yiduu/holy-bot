@@ -988,10 +988,23 @@ function setTheme(theme) {
     requestAnimationFrame(rebuildChart);
   }
 }
+
 function toggleTheme() {
   haptic('selection');
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-  setTheme(cur === 'dark' ? 'light' : 'dark');
+  const next = cur === 'dark' ? 'light' : 'dark';
+
+  if (typeof document.startViewTransition === 'function') {
+    document.startViewTransition(() => {
+      setTheme(next);
+    });
+  } else {
+    document.documentElement.classList.add('theme-transitioning');
+    setTheme(next);
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 250);
+  }
 }
 setTheme(localStorage.getItem('theme') || 'dark');
 
@@ -4653,6 +4666,7 @@ async function loadChat() {
       window.chatState = { with: res.partner.telegram_id, name: res.partner.display_name || res.partner.anonymous_id };
       loadMessages(res.partner.telegram_id);
     } else {
+      window._menteesList = res.mentees;
       $('chatWith').style.display = 'none';
       if (partnerWrapper) partnerWrapper.style.display = 'block';
 
@@ -4728,6 +4742,7 @@ async function refreshChatPartnerBadges() {
   try {
     const res = await apiFetch('/api/users/chat-partner');
     if (res.type !== 'multiple') return;
+    window._menteesList = res.mentees;
 
     const currentId = window.chatState?.with;
     const hasOtherUnread = res.mentees.some(m => String(m.telegram_id) !== String(currentId) && m.unread_count > 0);
@@ -4754,17 +4769,49 @@ async function refreshChatPartnerBadges() {
   } catch { }
 }
 
-function switchChatPartner(tid) {
+async function switchChatPartner(tid) {
+  if (!tid || String(window.chatState?.with) === String(tid)) return;
   haptic('selection');
   cancelEditMessage();
   cancelReply();
   window.chatState.with = tid;
   toggleChatInput(true);
-  window.pendingChatPartner = tid;
-  // Await the read-marking round trip before re-fetching chat-partner data,
-  // so the badge for the mentee we just opened is reliably cleared instead
-  // of racing loadChat()'s fetch against loadMessages()'s read-marking.
-  loadMessages(tid).finally(loadChat);
+  setLastChatPartner(currentUser?.telegram_id, tid);
+
+  // Update selected partner in memory and header immediately
+  let partner = (window._menteesList || []).find(m => String(m.telegram_id) === String(tid));
+  if (!partner) {
+    try {
+      const res = await apiFetch('/api/users/chat-partner');
+      if (res.type === 'multiple') {
+        window._menteesList = res.mentees;
+        partner = res.mentees.find(m => String(m.telegram_id) === String(tid));
+      }
+    } catch { }
+  }
+
+  if (partner) {
+    const selectedNameEl = $('chatPartnerSelectedName');
+    if (selectedNameEl) selectedNameEl.textContent = partner.display_name;
+    setChatPeerHeader(partner.display_name, partner.last_active, partner.telegram_id, partner.photo_file_id, partner.photo_updated_at);
+    window.chatState.name = partner.display_name || partner.anonymous_id;
+  }
+
+  // Update active item styling in the custom dropdown menu
+  const menu = $('chatPartnerDropdownMenu');
+  if (menu) {
+    menu.querySelectorAll('.msg-menu-item').forEach(btn => {
+      const isSelected = btn.getAttribute('onclick')?.includes(`'${tid}'`);
+      btn.style.background = isSelected ? 'var(--surface)' : '';
+      btn.style.color = isSelected ? 'var(--gold)' : '';
+      const span = btn.querySelector('span');
+      if (span) span.style.fontWeight = isSelected ? '700' : '500';
+    });
+  }
+
+  // Load messages directly for the newly selected mentee
+  await loadMessages(tid);
+  refreshChatPartnerBadges();
 }
 
 function openChat(partnerId) {
@@ -4774,7 +4821,6 @@ function openChat(partnerId) {
 
 async function loadMessages(with_id) {
   const container = $('chatMessages');
-  if (container) container.classList.add('loading');
 
   try {
     const messages = await apiFetch(`/api/messages/${with_id}`);
@@ -4812,12 +4858,6 @@ async function loadMessages(with_id) {
   } catch (e) {
     console.error(e);
     throw e;
-  } finally {
-    if (container) {
-      requestAnimationFrame(() => {
-        container.classList.remove('loading');
-      });
-    }
   }
 }
 
